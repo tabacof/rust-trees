@@ -91,12 +91,15 @@ impl TreeNode {
         x.iter().map(|x| (x - avg).powf(2.0)).sum()
     }
 
-    pub fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
-        let mut pairs: Vec<(&f32, &f32)> = feature.iter().zip(target.iter()).collect();
+    pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
+        let mut pairs: Vec<(&f32, &f32)> = a.iter().zip(b).collect();
         pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
 
-        let (sorted_feature, sorted_target): (Vec<f32>, Vec<f32>) =
-            pairs.into_iter().map(|(x, y)| (*x, *y)).unzip();
+        pairs.into_iter().map(|(x, y)| (*x, *y)).unzip()
+    }
+
+    pub fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
+        let (sorted_feature, sorted_target) = TreeNode::sort_two_vectors(feature, target);
 
         let mut row_index = 1;
         let mut min_mse = f32::MAX;
@@ -106,7 +109,6 @@ impl TreeNode {
             let second_half = first_half.split_off(i);
 
             let mse = TreeNode::mse(&first_half) + TreeNode::mse(&second_half);
-            println!("mse {}", mse);
 
             if mse <= min_mse {
                 row_index = i;
@@ -134,8 +136,6 @@ impl TreeNode {
             };
         }
 
-        println!("train={:?}", train);
-
         let best_feature = train
             .feature_matrix
             .iter()
@@ -146,21 +146,15 @@ impl TreeNode {
             .min_by(|a, b| a.loss.partial_cmp(&b.loss).unwrap_or(Equal))
             .unwrap();
 
-        println!("best_feature={:?}", best_feature);
-
         let mut left_dataset = train.clone_without_data();
         let mut right_dataset = train.clone_without_data();
 
         for i in 0..train.feature_names.len() {
             if i != best_feature.col_index {
-                let mut pairs: Vec<(&f32, &f32)> = train.feature_matrix[best_feature.col_index]
-                    .iter()
-                    .zip(train.feature_matrix[i].iter())
-                    .collect();
-                pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
-
-                let (_, sorted_feature): (Vec<f32>, Vec<f32>) =
-                    pairs.into_iter().map(|(x, y)| (*x, *y)).unzip();
+                let (_, sorted_feature) = TreeNode::sort_two_vectors(
+                    &train.feature_matrix[best_feature.col_index],
+                    &train.feature_matrix[i],
+                );
 
                 let mut first_half = sorted_feature.clone();
                 let second_half = first_half.split_off(best_feature.row_index);
@@ -176,24 +170,16 @@ impl TreeNode {
             }
         }
 
-        let mut pairs: Vec<(&f32, &f32)> = train.feature_matrix[best_feature.col_index]
-            .iter()
-            .zip(train.target_vector.iter())
-            .collect();
-        pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
-
-        let (_, sorted_target): (Vec<f32>, Vec<f32>) =
-            pairs.into_iter().map(|(x, y)| (*x, *y)).unzip();
+        let (_, sorted_target) = TreeNode::sort_two_vectors(
+            &train.feature_matrix[best_feature.col_index],
+            &train.feature_matrix[best_feature.col_index],
+        );
 
         let mut first_half = sorted_target;
         let second_half = first_half.split_off(best_feature.row_index);
 
         left_dataset.target_vector = first_half;
         right_dataset.target_vector = second_half;
-
-        println!("left: {:?}", left_dataset);
-
-        println!("right: {:?}", right_dataset);
 
         TreeNode {
             split: Some(best_feature.split),
@@ -206,19 +192,13 @@ impl TreeNode {
 }
 
 fn main() {
-    // let train = Dataset::read_csv("datasets/toy.csv", ";");
-
-    // println!("{:#?}", train);
-
-    // let dt = TreeNode::train(train);
-
-    // println!("{:#?}", dt);
-
-    let train = Dataset::read_csv("datasets/one_feature.csv", ",");
-
-    println!("{:#?}", train);
-
+    println!("Test 1:");
+    let train = Dataset::read_csv("datasets/toy.csv", ";");
     let dt = TreeNode::train(train);
-
     println!("{:#?}", dt);
+
+    // println!("Test 2:");
+    // let train = Dataset::read_csv("datasets/one_feature.csv", ",");
+    // let dt = TreeNode::train(train);
+    // println!("{:#?}", dt);
 }
