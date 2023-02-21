@@ -1,4 +1,5 @@
 use std::cmp::Ordering::Equal;
+use std::collections::HashMap;
 use std::fs;
 use std::{cell::RefCell, rc::Rc};
 
@@ -71,7 +72,7 @@ struct TreeNode {
     right: Option<Rc<RefCell<TreeNode>>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct SplitResult {
     col_index: usize,
     row_index: usize,
@@ -172,7 +173,7 @@ impl TreeNode {
 
         let (_, sorted_target) = TreeNode::sort_two_vectors(
             &train.feature_matrix[best_feature.col_index],
-            &train.feature_matrix[best_feature.col_index],
+            &train.target_vector,
         );
 
         let mut first_half = sorted_target;
@@ -189,16 +190,94 @@ impl TreeNode {
             right: Some(Rc::new(RefCell::new(TreeNode::train(right_dataset)))),
         }
     }
+
+    pub fn predict_row(&self, row: &HashMap<&String, f32>) -> f32 {
+        if let Some(feature) = &self.feature_name {
+            if *row.get(&feature).unwrap() >= self.split.unwrap() {
+                return self
+                    .right
+                    .as_ref()
+                    .expect("Right node expected")
+                    .borrow()
+                    .predict_row(row);
+            } else {
+                return self
+                    .left
+                    .as_ref()
+                    .expect("Left node expected")
+                    .borrow()
+                    .predict_row(row);
+            }
+        } else {
+            return self.prediction;
+        }
+    }
+
+    pub fn predict(&self, test: &mut Dataset) {
+        let mut res = vec![];
+        for i in 0..test.target_vector.len() {
+            let mut feature_vector = HashMap::new();
+            for (j, feature) in test.feature_names.iter().enumerate() {
+                feature_vector.insert(feature, test.feature_matrix[j][i]);
+            }
+            res.push(self.predict_row(&feature_vector));
+        }
+        test.target_vector = res;
+    }
 }
 
 fn main() {
     println!("Test 1:");
-    let train = Dataset::read_csv("datasets/toy.csv", ";");
+    let train = Dataset::read_csv("datasets/toy_train.csv", ";");
+    let mut test = Dataset::read_csv("datasets/toy_test.csv", ";");
     let dt = TreeNode::train(train);
     println!("{:#?}", dt);
+    dt.predict(&mut test);
+    println!("{:#?}", test);
 
-    // println!("Test 2:");
-    // let train = Dataset::read_csv("datasets/one_feature.csv", ",");
-    // let dt = TreeNode::train(train);
-    // println!("{:#?}", dt);
+    println!("Test 2:");
+    let train = Dataset::read_csv("datasets/one_feature_train.csv", ",");
+    let mut test = Dataset::read_csv("datasets/one_feature_test.csv", ",");
+    let dt = TreeNode::train(train);
+    dt.predict(&mut test);
+    println!("{:#?}", test);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_float_avg() {
+        assert_eq!(TreeNode::float_avg(&vec![-1.0, 0.0, 1.0]), 0.0);
+        assert_eq!(TreeNode::float_avg(&vec![1.0]), 1.0);
+    }
+
+    #[test]
+    fn test_mse() {
+        assert_eq!(TreeNode::mse(&vec![-1.0, 0.0, 1.0]), 2.0);
+        assert_eq!(TreeNode::mse(&vec![1.0]), 0.0);
+    }
+
+    #[test]
+    fn test_sort_two_vectors() {
+        assert_eq!(
+            TreeNode::sort_two_vectors(&vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            (vec![0.0, 1.0, 2.0], vec![0.0, 1.0, -1.0])
+        );
+    }
+
+    #[test]
+    fn test_split_feature() {
+        assert_eq!(
+            TreeNode::split_feature(1, &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            SplitResult {
+                col_index: 1,
+                row_index: 2,
+                split: 2.0,
+                prediction: 0.0,
+                loss: 0.5,
+            }
+        );
+    }
 }
