@@ -207,22 +207,20 @@ impl TreeNode {
     pub fn predict_row(&self, row: &HashMap<&String, f32>) -> f32 {
         if let Some(feature) = &self.feature_name {
             if *row.get(&feature).unwrap() >= self.split.unwrap() {
-                return self
-                    .right
+                self.right
                     .as_ref()
                     .expect("Right node expected")
                     .borrow()
-                    .predict_row(row);
+                    .predict_row(row)
             } else {
-                return self
-                    .left
+                self.left
                     .as_ref()
                     .expect("Left node expected")
                     .borrow()
-                    .predict_row(row);
+                    .predict_row(row)
             }
         } else {
-            return self.prediction;
+            self.prediction
         }
     }
 
