@@ -55,6 +55,19 @@ impl Dataset {
         }
     }
 
+    pub fn write_csv(self, path: &str, sep: &str) {
+        let mut contents: String = self.feature_names.join(sep) + sep + &self.target_name + "\n";
+
+        for i in 0..self.target_vector.len() {
+            for j in 0..self.feature_names.len() {
+                contents += &(self.feature_matrix[j][i].to_string() + sep);
+            }
+            contents += &(self.target_vector[i].to_string() + "\n");
+        }
+
+        fs::write(path, contents).expect("Unable to write file");
+    }
+
     pub fn clone_without_data(&self) -> Dataset {
         let mut clone = self.clone();
         clone.feature_matrix = vec![];
@@ -126,11 +139,11 @@ impl TreeNode {
         }
     }
 
-    pub fn train(train: Dataset) -> TreeNode {
-        if train.target_vector.len() == 1 {
+    pub fn train(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
+        if (curr_depth == max_depth) | (train.target_vector.len() == 1) {
             return TreeNode {
                 split: None,
-                prediction: train.target_vector[0],
+                prediction: TreeNode::float_avg(&train.target_vector),
                 feature_name: None,
                 left: None,
                 right: None,
@@ -151,24 +164,16 @@ impl TreeNode {
         let mut right_dataset = train.clone_without_data();
 
         for i in 0..train.feature_names.len() {
-            if i != best_feature.col_index {
-                let (_, sorted_feature) = TreeNode::sort_two_vectors(
-                    &train.feature_matrix[best_feature.col_index],
-                    &train.feature_matrix[i],
-                );
+            let (_, sorted_feature) = TreeNode::sort_two_vectors(
+                &train.feature_matrix[best_feature.col_index],
+                &train.feature_matrix[i],
+            );
 
-                let mut first_half = sorted_feature.clone();
-                let second_half = first_half.split_off(best_feature.row_index);
+            let mut first_half = sorted_feature.clone();
+            let second_half = first_half.split_off(best_feature.row_index);
 
-                left_dataset.feature_matrix.push(first_half);
-                right_dataset.feature_matrix.push(second_half);
-            } else {
-                let mut first_half = train.feature_matrix[best_feature.col_index].clone();
-                let second_half = first_half.split_off(best_feature.row_index);
-
-                left_dataset.feature_matrix.push(first_half);
-                right_dataset.feature_matrix.push(second_half);
-            }
+            left_dataset.feature_matrix.push(first_half);
+            right_dataset.feature_matrix.push(second_half);
         }
 
         let (_, sorted_target) = TreeNode::sort_two_vectors(
@@ -186,8 +191,16 @@ impl TreeNode {
             split: Some(best_feature.split),
             prediction: best_feature.prediction,
             feature_name: Some(train.feature_names[best_feature.col_index].clone()),
-            left: Some(Rc::new(RefCell::new(TreeNode::train(left_dataset)))),
-            right: Some(Rc::new(RefCell::new(TreeNode::train(right_dataset)))),
+            left: Some(Rc::new(RefCell::new(TreeNode::train(
+                left_dataset,
+                curr_depth + 1,
+                max_depth,
+            )))),
+            right: Some(Rc::new(RefCell::new(TreeNode::train(
+                right_dataset,
+                curr_depth + 1,
+                max_depth,
+            )))),
         }
     }
 
@@ -230,7 +243,7 @@ fn main() {
     println!("Test 1:");
     let train = Dataset::read_csv("datasets/toy_train.csv", ";");
     let mut test = Dataset::read_csv("datasets/toy_test.csv", ";");
-    let dt = TreeNode::train(train);
+    let dt = TreeNode::train(train, 0, 4);
     println!("{:#?}", dt);
     dt.predict(&mut test);
     println!("{:#?}", test);
@@ -238,9 +251,16 @@ fn main() {
     println!("Test 2:");
     let train = Dataset::read_csv("datasets/one_feature_train.csv", ",");
     let mut test = Dataset::read_csv("datasets/one_feature_test.csv", ",");
-    let dt = TreeNode::train(train);
+    let dt = TreeNode::train(train, 0, 5);
     dt.predict(&mut test);
     println!("{:#?}", test);
+
+    println!("Test 3:");
+    let train = Dataset::read_csv("datasets/diabetes_train.csv", ",");
+    let mut test = Dataset::read_csv("datasets/diabetes_test.csv", ",");
+    let dt = TreeNode::train(train, 0, 5);
+    dt.predict(&mut test);
+    test.write_csv("datasets/diabetes_pred.csv", ",")
 }
 
 #[cfg(test)]
