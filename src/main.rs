@@ -258,7 +258,14 @@ fn main() {
     let mut test = Dataset::read_csv("datasets/diabetes_test.csv", ",");
     let dt = TreeNode::train(train, 0, 5);
     dt.predict(&mut test);
-    test.write_csv("datasets/diabetes_pred.csv", ",")
+    test.write_csv("datasets/diabetes_pred.csv", ",");
+
+    // println!("Test 4:");
+    // let train = Dataset::read_csv("datasets/housing_train.csv", ",");
+    // let mut test = Dataset::read_csv("datasets/housing_test.csv", ",");
+    // let dt = TreeNode::train(train, 0, 2);
+    // dt.predict(&mut test);
+    // test.write_csv("datasets/housing_pred.csv", ",");
 }
 
 #[cfg(test)]
