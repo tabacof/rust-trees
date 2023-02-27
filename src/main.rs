@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 use std::fs;
@@ -105,6 +106,12 @@ impl TreeNode {
         x.iter().map(|x| (x - avg).powf(2.0)).sum()
     }
 
+    pub fn abserror(x: &[f32]) -> f32 {
+        let avg = TreeNode::float_avg(x);
+
+        x.iter().map(|x| (x - avg).abs()).sum()
+    }
+
     pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
         let mut pairs: Vec<(&f32, &f32)> = a.iter().zip(b).collect();
         pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
@@ -161,11 +168,37 @@ impl TreeNode {
         let mut min_mse = f32::MAX;
         let mut last = sorted_feature[0];
 
+        let square: Vec<f32> = sorted_target
+            .iter()
+            .map(|x| x * x)
+            .scan(0.0, |state, x| {
+                *state = *state + x;
+                Some(*state)
+            })
+            .collect();
+        let sum: Vec<f32> = sorted_target
+            .iter()
+            .scan(0.0, |state, x| {
+                *state = *state + x;
+                Some(*state)
+            })
+            .collect();
         for i in 1..sorted_feature.len() {
             if sorted_feature[i] > last {
-                let mse = TreeNode::mse(&sorted_target[0..i]) + TreeNode::mse(&sorted_target[i..]);
+                //    var = \sum_i^n (y_i - y_bar) ** 2
+                //           = (\sum_i^n y_i ** 2) - n_samples * y_bar ** 2
+                //
+                let left_square_sum = square[i];
+                let right_square_sum = square[square.len() - 1] - square[i];
 
-                if mse <= min_mse {
+                let left_avg = sum[i] / (i as f32);
+                let right_avg = (sum[sum.len() - 1] - sum[i]) / (sum.len() - i) as f32;
+
+                let right_mse = right_square_sum - (sum.len() - i) as f32 * right_avg * right_avg;
+                let left_mse = left_square_sum -  i as f32 * left_avg * left_avg;
+                let mse = left_mse + right_mse;
+
+                if mse < min_mse {
                     row_index = i;
                     min_mse = mse;
                 }
@@ -197,6 +230,7 @@ impl TreeNode {
         let best_feature = train
             .feature_matrix
             .iter()
+            //.par_iter()
             .enumerate()
             .map(|(index, feature_vector)| {
                 TreeNode::split_feature(index, feature_vector, &train.target_vector)
@@ -324,7 +358,7 @@ fn main() {
     println!("Test 4:");
     let train = Dataset::read_csv("datasets/housing_train.csv", ",");
     let test = Dataset::read_csv("datasets/housing_test.csv", ",");
-    let dt = TreeNode::train(train, 0, 1);
+    let dt = TreeNode::train(train, 0, 10);
     let mut pred = test.clone();
     dt.predict(&mut pred);
     println!(
