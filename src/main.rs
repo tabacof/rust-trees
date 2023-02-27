@@ -105,54 +105,18 @@ impl TreeNode {
         x.iter().map(|x| (x - avg).powf(2.0)).sum()
     }
 
+    pub fn abserror(x: &[f32]) -> f32 {
+        let avg = TreeNode::float_avg(x);
+
+        x.iter().map(|x| (x - avg).abs()).sum()
+    }
+
     pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
         let mut pairs: Vec<(&f32, &f32)> = a.iter().zip(b).collect();
         pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
 
         pairs.into_iter().map(|(x, y)| (*x, *y)).unzip()
     }
-
-    // pub fn split_feature_mse(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
-    //     let (sorted_feature, sorted_target) = TreeNode::sort_two_vectors(feature, target);
-
-    //     let mut row_index = 1;
-    //     let mut min_mse = f32::MAX;
-    //     let mut last = sorted_feature[0];
-    //     let mut left_avg = sorted_target[0];
-    //     let mut right_avg = TreeNode::float_avg(&sorted_target[1..]);
-
-    //     for i in 1..sorted_feature.len() {
-    //         left_avg = (left_avg * i as f32 + sorted_target[i]) / (i as f32 + 1.0);
-    //         right_avg = (right_avg * i as f32 - sorted_target[i])
-    //             / (sorted_feature.len() as f32 - i as f32);
-
-    //         if sorted_feature[i] > last {
-    //             let mse: f32 = (&sorted_target[0..i])
-    //                 .iter()
-    //                 .map(|&x| (x - left_avg) * (x - left_avg))
-    //                 .sum::<f32>()
-    //                 + (&sorted_target[i..])
-    //                     .iter()
-    //                     .map(|&x| (x - right_avg) * (x - right_avg))
-    //                     .sum::<f32>();
-
-    //             if mse <= min_mse {
-    //                 row_index = i;
-    //                 min_mse = mse;
-    //             }
-
-    //             last = sorted_feature[i];
-    //         }
-    //     }
-
-    //     SplitResult {
-    //         col_index,
-    //         row_index,
-    //         split: sorted_feature[row_index],
-    //         prediction: TreeNode::float_avg(target),
-    //         loss: min_mse,
-    //     }
-    // }
 
     pub fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
         let (sorted_feature, sorted_target) = TreeNode::sort_two_vectors(feature, target);
@@ -161,11 +125,38 @@ impl TreeNode {
         let mut min_mse = f32::MAX;
         let mut last = sorted_feature[0];
 
+        let square: Vec<f32> = sorted_target
+            .iter()
+            .map(|x| x * x)
+            .scan(0.0, |state, x| {
+                *state = *state + x;
+                Some(*state)
+            })
+            .collect();
+        let sum: Vec<f32> = sorted_target
+            .iter()
+            .scan(0.0, |state, x| {
+                *state = *state + x;
+                Some(*state)
+            })
+            .collect();
+
         for i in 1..sorted_feature.len() {
             if sorted_feature[i] > last {
-                let mse = TreeNode::mse(&sorted_target[0..i]) + TreeNode::mse(&sorted_target[i..]);
+                //    var = \sum_i^n (y_i - y_bar) ** 2
+                //           = (\sum_i^n y_i ** 2) - n_samples * y_bar ** 2
+                //
+                let left_square_sum = square[i - 1];
+                let right_square_sum = square[square.len() - 1] - square[i - 1];
 
-                if mse <= min_mse {
+                let left_avg = sum[i - 1] / (i as f32);
+                let right_avg = (sum[sum.len() - 1] - sum[i - 1]) / (sum.len() - i) as f32;
+
+                let right_mse = right_square_sum - (sum.len() - i) as f32 * right_avg * right_avg;
+                let left_mse = left_square_sum - i as f32 * left_avg * left_avg;
+                let mse = left_mse + right_mse;
+
+                if mse < min_mse {
                     row_index = i;
                     min_mse = mse;
                 }
@@ -197,6 +188,7 @@ impl TreeNode {
         let best_feature = train
             .feature_matrix
             .iter()
+            //.par_iter()
             .enumerate()
             .map(|(index, feature_vector)| {
                 TreeNode::split_feature(index, feature_vector, &train.target_vector)
@@ -324,7 +316,7 @@ fn main() {
     println!("Test 4:");
     let train = Dataset::read_csv("datasets/housing_train.csv", ",");
     let test = Dataset::read_csv("datasets/housing_test.csv", ",");
-    let dt = TreeNode::train(train, 0, 1);
+    let dt = TreeNode::train(train, 0, 10);
     let mut pred = test.clone();
     dt.predict(&mut pred);
     println!(
