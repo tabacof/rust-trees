@@ -41,6 +41,24 @@ fn main() {
         "R2: {}",
         TreeNode::r2(&test.target_vector, &pred.target_vector),
     );
+
+    println!("Test 5:");
+    let train = Dataset::read_csv("datasets/breast_cancer_train.csv", ",");
+    let test = Dataset::read_csv("datasets/breast_cancer_test.csv", ",");
+    let dt = TreeNode::train_clf(train, 0, 2);
+    let mut pred = test.clone();
+    dt.predict(&mut pred);
+
+    pred.target_vector = pred
+        .target_vector
+        .iter()
+        .map(|&x| if x >= 0.5 { 1.0 } else { 0.0 })
+        .collect();
+
+    println!(
+        "Accuracy: {}",
+        TreeNode::accuracy(&test.target_vector, &pred.target_vector),
+    );
 }
 
 #[cfg(test)]
