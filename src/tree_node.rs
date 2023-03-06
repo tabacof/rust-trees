@@ -7,6 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 pub struct TreeNode {
     split: Option<f32>,
     prediction: f32,
+    samples: usize,
     feature_name: Option<String>,
     left: Option<Rc<RefCell<TreeNode>>>,
     right: Option<Rc<RefCell<TreeNode>>>,
@@ -26,18 +27,6 @@ impl TreeNode {
         x.iter().sum::<f32>() / x.len() as f32
     }
 
-    pub fn mse(x: &[f32]) -> f32 {
-        let avg = TreeNode::float_avg(x);
-
-        x.iter().map(|x| (x - avg).powf(2.0)).sum()
-    }
-
-    pub fn abserror(x: &[f32]) -> f32 {
-        let avg = TreeNode::float_avg(x);
-
-        x.iter().map(|x| (x - avg).abs()).sum()
-    }
-
     pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
         let mut pairs: Vec<(&f32, &f32)> = a.iter().zip(b).collect();
         pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
@@ -45,7 +34,7 @@ impl TreeNode {
         pairs.into_iter().map(|(x, y)| (*x, *y)).unzip()
     }
 
-    fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
+    fn split_feature_reg(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
         let (sorted_feature, sorted_target) = TreeNode::sort_two_vectors(feature, target);
 
         let mut row_index = 1;
@@ -56,14 +45,14 @@ impl TreeNode {
             .iter()
             .map(|x| x * x)
             .scan(0.0, |state, x| {
-                *state = *state + x;
+                *state += x;
                 Some(*state)
             })
             .collect();
         let sum: Vec<f32> = sorted_target
             .iter()
             .scan(0.0, |state, x| {
-                *state = *state + x;
+                *state += x;
                 Some(*state)
             })
             .collect();
@@ -95,9 +84,50 @@ impl TreeNode {
         SplitResult {
             col_index,
             row_index,
-            split: sorted_feature[row_index],
+            split: (sorted_feature[row_index] + sorted_feature[row_index - 1]) / 2.0,
             prediction: TreeNode::float_avg(target),
             loss: min_mse,
+        }
+    }
+
+    fn split_feature_clf(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult {
+        let (sorted_feature, sorted_target) = TreeNode::sort_two_vectors(feature, target);
+
+        let mut row_index = 1;
+        let mut min_gini = f32::MAX;
+        let mut last = sorted_feature[0];
+
+        let cumsum: Vec<f32> = sorted_target
+            .iter()
+            .scan(0.0, |state, x| {
+                *state += x;
+                Some(*state)
+            })
+            .collect();
+
+        for i in 1..sorted_feature.len() {
+            if sorted_feature[i] > last {
+                let left_cumsum = cumsum[i - 1] / (i as f32);
+                let right_cumsum =
+                    (cumsum[cumsum.len() - 1] - cumsum[i - 1]) / (cumsum.len() - i) as f32;
+
+                let gini = left_cumsum * (1.0 - left_cumsum) + right_cumsum * (1.0 - right_cumsum);
+
+                if gini < min_gini {
+                    row_index = i;
+                    min_gini = gini;
+                }
+
+                last = sorted_feature[i];
+            }
+        }
+
+        SplitResult {
+            col_index,
+            row_index,
+            split: (sorted_feature[row_index] + sorted_feature[row_index - 1]) / 2.0,
+            prediction: TreeNode::float_avg(target),
+            loss: min_gini,
         }
     }
 
@@ -106,6 +136,7 @@ impl TreeNode {
             return TreeNode {
                 split: None,
                 prediction: TreeNode::float_avg(&train.target_vector),
+                samples: train.target_vector.len(),
                 feature_name: None,
                 left: None,
                 right: None,
@@ -118,7 +149,7 @@ impl TreeNode {
             //.par_iter()
             .enumerate()
             .map(|(index, feature_vector)| {
-                TreeNode::split_feature(index, feature_vector, &train.target_vector)
+                TreeNode::split_feature_reg(index, feature_vector, &train.target_vector)
             })
             .min_by(|a, b| a.loss.partial_cmp(&b.loss).unwrap_or(Equal))
             .unwrap();
@@ -153,6 +184,75 @@ impl TreeNode {
         TreeNode {
             split: Some(best_feature.split),
             prediction: best_feature.prediction,
+            samples: train.target_vector.len(),
+            feature_name: Some(train.feature_names[best_feature.col_index].clone()),
+            left: Some(Rc::new(RefCell::new(TreeNode::train(
+                left_dataset,
+                curr_depth + 1,
+                max_depth,
+            )))),
+            right: Some(Rc::new(RefCell::new(TreeNode::train(
+                right_dataset,
+                curr_depth + 1,
+                max_depth,
+            )))),
+        }
+    }
+
+    pub fn train_clf(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
+        if (curr_depth == max_depth) | (train.target_vector.len() == 1) {
+            return TreeNode {
+                split: None,
+                prediction: TreeNode::float_avg(&train.target_vector),
+                samples: train.target_vector.len(),
+                feature_name: None,
+                left: None,
+                right: None,
+            };
+        }
+
+        let best_feature = train
+            .feature_matrix
+            .iter()
+            //.par_iter()
+            .enumerate()
+            .map(|(index, feature_vector)| {
+                TreeNode::split_feature_clf(index, feature_vector, &train.target_vector)
+            })
+            .min_by(|a, b| a.loss.partial_cmp(&b.loss).unwrap_or(Equal))
+            .unwrap();
+
+        let mut left_dataset = train.clone_without_data();
+        let mut right_dataset = train.clone_without_data();
+
+        for i in 0..train.feature_names.len() {
+            let (_, sorted_feature) = TreeNode::sort_two_vectors(
+                &train.feature_matrix[best_feature.col_index],
+                &train.feature_matrix[i],
+            );
+
+            let mut first_half = sorted_feature.clone();
+            let second_half = first_half.split_off(best_feature.row_index);
+
+            left_dataset.feature_matrix.push(first_half);
+            right_dataset.feature_matrix.push(second_half);
+        }
+
+        let (_, sorted_target) = TreeNode::sort_two_vectors(
+            &train.feature_matrix[best_feature.col_index],
+            &train.target_vector,
+        );
+
+        let mut first_half = sorted_target;
+        let second_half = first_half.split_off(best_feature.row_index);
+
+        left_dataset.target_vector = first_half;
+        right_dataset.target_vector = second_half;
+
+        TreeNode {
+            split: Some(best_feature.split),
+            prediction: best_feature.prediction,
+            samples: train.target_vector.len(),
             feature_name: Some(train.feature_names[best_feature.col_index].clone()),
             left: Some(Rc::new(RefCell::new(TreeNode::train(
                 left_dataset,
@@ -211,23 +311,20 @@ impl TreeNode {
 
         1.0 - mse / var
     }
+
+    pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
+        x_true
+            .iter()
+            .zip(x_pred)
+            .map(|(xt, xp)| ((xt == xp) as i32 as f32))
+            .sum::<f32>()
+            / x_true.len() as f32
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn test_float_avg() {
-        assert_eq!(TreeNode::float_avg(&vec![-1.0, 0.0, 1.0]), 0.0);
-        assert_eq!(TreeNode::float_avg(&vec![1.0]), 1.0);
-    }
-
-    #[test]
-    fn test_mse() {
-        assert_eq!(TreeNode::mse(&vec![-1.0, 0.0, 1.0]), 2.0);
-        assert_eq!(TreeNode::mse(&vec![1.0]), 0.0);
-    }
 
     #[test]
     fn test_sort_two_vectors() {
@@ -240,7 +337,7 @@ mod test {
     #[test]
     fn test_split_feature() {
         assert_eq!(
-            TreeNode::split_feature(1, &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            TreeNode::split_feature_reg(1, &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
             SplitResult {
                 col_index: 1,
                 row_index: 2,
