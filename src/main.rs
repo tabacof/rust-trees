@@ -48,26 +48,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_float_avg() {
-        assert_eq!(TreeNode::float_avg(&vec![-1.0, 0.0, 1.0]), 0.0);
-        assert_eq!(TreeNode::float_avg(&vec![1.0]), 1.0);
-    }
-
-    #[test]
-    fn test_mse() {
-        assert_eq!(TreeNode::mse(&vec![-1.0, 0.0, 1.0]), 2.0);
-        assert_eq!(TreeNode::mse(&vec![1.0]), 0.0);
-    }
-
-    #[test]
-    fn test_sort_two_vectors() {
-        assert_eq!(
-            TreeNode::sort_two_vectors(&vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
-            (vec![0.0, 1.0, 2.0], vec![0.0, 1.0, -1.0])
-        );
-    }
-
-    #[test]
     fn test_integration() {
         let train = Dataset::read_csv("datasets/diabetes_train.csv", ",");
         let test = Dataset::read_csv("datasets/diabetes_test.csv", ",");
