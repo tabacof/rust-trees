@@ -341,7 +341,7 @@ mod test {
             SplitResult {
                 col_index: 1,
                 row_index: 2,
-                split: 1.5,  // takes the average between the value to split on and the previous
+                split: 10000.0,  // takes the average between the value to split on and the previous
                 prediction: 0.0,
                 loss: 0.5,
             }
