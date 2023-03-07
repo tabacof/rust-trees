@@ -1,5 +1,7 @@
 mod dataset;
 mod tree_node;
+mod split_criteria;
+mod vec_utils;
 
 use crate::dataset::Dataset;
 use crate::tree_node::TreeNode;
