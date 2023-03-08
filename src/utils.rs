@@ -11,6 +11,34 @@ pub fn float_avg(x: &[f32]) -> f32 {
     x.iter().sum::<f32>() / x.len() as f32
 }
 
+pub fn classification_threshold(x: &[f32], clf_threshold: f32) -> Vec<f32> {
+    x.iter()
+        .map(|&x| if x >= clf_threshold { 1.0 } else { 0.0 })
+        .collect()
+}
+
+pub fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
+    let mse: f32 = x_true
+        .iter()
+        .zip(x_pred)
+        .map(|(xt, xp)| (xt - xp).powf(2.0))
+        .sum();
+
+    let avg = float_avg(x_true);
+    let var: f32 = x_true.iter().map(|x| (x - avg).powf(2.0)).sum();
+
+    1.0 - mse / var
+}
+
+pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
+    x_true
+        .iter()
+        .zip(x_pred)
+        .map(|(xt, xp)| ((xt == xp) as i32 as f32))
+        .sum::<f32>()
+        / x_true.len() as f32
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,8 +1,8 @@
 use crate::dataset::Dataset;
-use crate::split_criteria::gini_coeficient_split_feature;
+use crate::split_criteria::gini_coefficient_split_feature;
 use crate::split_criteria::mean_squared_error_split_feature;
 use crate::split_criteria::SplitFunction;
-use crate::vec_utils;
+use crate::utils;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 use std::{cell::RefCell, rc::Rc};
@@ -18,15 +18,6 @@ pub struct TreeNode {
 }
 
 impl TreeNode {
-    pub fn train(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
-        Self::_train(
-            train,
-            curr_depth,
-            max_depth,
-            mean_squared_error_split_feature,
-        )
-    }
-
     fn _train(
         train: Dataset,
         curr_depth: i32,
@@ -36,7 +27,7 @@ impl TreeNode {
         if (curr_depth == max_depth) | (train.target_vector.len() == 1) {
             return TreeNode {
                 split: None,
-                prediction: vec_utils::float_avg(&train.target_vector),
+                prediction: utils::float_avg(&train.target_vector),
                 samples: train.target_vector.len(),
                 feature_name: None,
                 left: None,
@@ -58,7 +49,7 @@ impl TreeNode {
         let mut right_dataset = train.clone_without_data();
 
         for i in 0..train.feature_names.len() {
-            let (_, sorted_feature) = vec_utils::sort_two_vectors(
+            let (_, sorted_feature) = utils::sort_two_vectors(
                 &train.feature_matrix[best_feature.col_index],
                 &train.feature_matrix[i],
             );
@@ -70,7 +61,7 @@ impl TreeNode {
             right_dataset.feature_matrix.push(second_half);
         }
 
-        let (_, sorted_target) = vec_utils::sort_two_vectors(
+        let (_, sorted_target) = utils::sort_two_vectors(
             &train.feature_matrix[best_feature.col_index],
             &train.target_vector,
         );
@@ -101,8 +92,17 @@ impl TreeNode {
         }
     }
 
+    pub fn train_reg(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
+        Self::_train(
+            train,
+            curr_depth,
+            max_depth,
+            mean_squared_error_split_feature,
+        )
+    }
+
     pub fn train_clf(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
-        Self::_train(train, curr_depth, max_depth, gini_coeficient_split_feature)
+        Self::_train(train, curr_depth, max_depth, gini_coefficient_split_feature)
     }
 
     pub fn predict_row(&self, row: &HashMap<&String, f32>) -> f32 {
@@ -135,28 +135,6 @@ impl TreeNode {
             res.push(self.predict_row(&feature_vector));
         }
         test.target_vector = res;
-    }
-
-    pub fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
-        let mse: f32 = x_true
-            .iter()
-            .zip(x_pred)
-            .map(|(xt, xp)| (xt - xp).powf(2.0))
-            .sum();
-
-        let avg = vec_utils::float_avg(x_true);
-        let var: f32 = x_true.iter().map(|x| (x - avg).powf(2.0)).sum();
-
-        1.0 - mse / var
-    }
-
-    pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
-        x_true
-            .iter()
-            .zip(x_pred)
-            .map(|(xt, xp)| ((xt == xp) as i32 as f32))
-            .sum::<f32>()
-            / x_true.len() as f32
     }
 }
 

@@ -1,6 +1,7 @@
-use crate::vec_utils;
+use crate::utils;
 
-pub(crate) type SplitFunction = fn(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
+pub(crate) type SplitFunction =
+    fn(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
 
 //pub(crate) trait SplitCriteria {
 //    fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
@@ -23,7 +24,7 @@ pub(crate) fn mean_squared_error_split_feature(
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult {
-    let (sorted_feature, sorted_target) = vec_utils::sort_two_vectors(feature, target);
+    let (sorted_feature, sorted_target) = utils::sort_two_vectors(feature, target);
 
     let mut row_index = 1;
     let mut min_mse = f32::MAX;
@@ -73,21 +74,21 @@ pub(crate) fn mean_squared_error_split_feature(
         col_index,
         row_index,
         split: (sorted_feature[row_index] + sorted_feature[row_index - 1]) / 2.0,
-        prediction: vec_utils::float_avg(target),
+        prediction: utils::float_avg(target),
         loss: min_mse,
     }
 }
 //}
 
-//pub(crate) struct GiniCoeficient;
+//pub(crate) struct GiniCoefficient;
 
-//impl SplitCriteria for GiniCoeficient {
-pub(crate) fn gini_coeficient_split_feature(
+//impl SplitCriteria for GiniCoefficient {
+pub(crate) fn gini_coefficient_split_feature(
     col_index: usize,
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult {
-    let (sorted_feature, sorted_target) = vec_utils::sort_two_vectors(feature, target);
+    let (sorted_feature, sorted_target) = utils::sort_two_vectors(feature, target);
 
     let mut row_index = 1;
     let mut min_gini = f32::MAX;
@@ -122,7 +123,7 @@ pub(crate) fn gini_coeficient_split_feature(
         col_index,
         row_index,
         split: (sorted_feature[row_index] + sorted_feature[row_index - 1]) / 2.0,
-        prediction: vec_utils::float_avg(target),
+        prediction: utils::float_avg(target),
         loss: min_gini,
     }
 }
