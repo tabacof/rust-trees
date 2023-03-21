@@ -1,7 +1,7 @@
 use crate::utils;
 
 pub(crate) type SplitFunction =
-    fn(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
+    fn(col_index: usize, feature_name: &str, feature: &[f32], target: &[f32]) -> SplitResult;
 
 //pub(crate) trait SplitCriteria {
 //    fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
@@ -10,6 +10,7 @@ pub(crate) type SplitFunction =
 #[derive(Debug, PartialEq)]
 pub(crate) struct SplitResult {
     pub(crate) col_index: usize,
+    pub(crate) feature_name: String,
     pub(crate) row_index: usize,
     pub(crate) split: f32,
     pub(crate) prediction: f32,
@@ -21,6 +22,7 @@ pub(crate) struct SplitResult {
 //impl SplitCriteria for MeanSquaredError {
 pub(crate) fn mean_squared_error_split_feature(
     col_index: usize,
+    feature_name: &str,
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult {
@@ -72,6 +74,7 @@ pub(crate) fn mean_squared_error_split_feature(
 
     SplitResult {
         col_index,
+        feature_name: feature_name.to_string(),
         row_index,
         split: (sorted_feature[row_index] + sorted_feature[row_index - 1]) / 2.0,
         prediction: utils::float_avg(target),
@@ -85,6 +88,7 @@ pub(crate) fn mean_squared_error_split_feature(
 //impl SplitCriteria for GiniCoefficient {
 pub(crate) fn gini_coefficient_split_feature(
     col_index: usize,
+    feature_name: &str,
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult {
@@ -108,7 +112,15 @@ pub(crate) fn gini_coefficient_split_feature(
             let right_cumsum =
                 (cumsum[cumsum.len() - 1] - cumsum[i - 1]) / (cumsum.len() - i) as f32;
 
-            let gini = left_cumsum * (1.0 - left_cumsum) + right_cumsum * (1.0 - right_cumsum);
+            let gini_left =
+                1. - ((left_cumsum * left_cumsum) + ((1.0 - left_cumsum) * (1.0 - left_cumsum)));
+
+            let gini_right = 1.
+                - ((right_cumsum * right_cumsum) + ((1.0 - right_cumsum) * (1.0 - right_cumsum)));
+
+            let gini = gini_left * (i as f32) + gini_right * (cumsum.len() - i) as f32;
+
+            let gini = gini / cumsum.len() as f32;
 
             if gini < min_gini {
                 row_index = i;
@@ -121,6 +133,7 @@ pub(crate) fn gini_coefficient_split_feature(
 
     SplitResult {
         col_index,
+        feature_name: feature_name.to_string(),
         row_index,
         split: (sorted_feature[row_index] + sorted_feature[row_index - 1]) / 2.0,
         prediction: utils::float_avg(target),
@@ -134,11 +147,27 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_mean_squared_error() {
+    fn test_gini_coefficient_split_feature() {
         assert_eq!(
-            mean_squared_error_split_feature(1, &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            mean_squared_error_split_feature(1, "feature_a", &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
             SplitResult {
                 col_index: 1,
+                feature_name: "feature_a".to_string(),
+                row_index: 2,
+                split: 1.5, // takes the average between the value to split on and the previous
+                prediction: 0.0,
+                loss: 0.5,
+            }
+        );
+    }
+
+    #[test]
+    fn test_mean_squared_error() {
+        assert_eq!(
+            mean_squared_error_split_feature(1, "feature_a", &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            SplitResult {
+                col_index: 1,
+                feature_name: "feature_a".to_string(),
                 row_index: 2,
                 split: 1.5, // takes the average between the value to split on and the previous
                 prediction: 0.0,

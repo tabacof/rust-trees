@@ -44,6 +44,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_accuracy() {
+        let x_true = vec![1.0, 0.0, 0.0, 0.0];
+        let x_predict = vec![1.0, 1.0, 0.0, 0.0];
+        let expect = 0.75;
+        assert_eq!(expect, accuracy(&x_true, &x_predict));
+    }
+
+    #[test]
     fn test_float_avg() {
         let vector = vec![1.0, 2.0, 3.0];
         let expect = 2.0;

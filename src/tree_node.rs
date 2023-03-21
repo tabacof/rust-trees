@@ -2,7 +2,9 @@ use crate::dataset::Dataset;
 use crate::split_criteria::gini_coefficient_split_feature;
 use crate::split_criteria::mean_squared_error_split_feature;
 use crate::split_criteria::SplitFunction;
+use crate::split_criteria::SplitResult;
 use crate::utils;
+use rand::seq::SliceRandom;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 use std::{cell::RefCell, rc::Rc};
@@ -35,15 +37,30 @@ impl TreeNode {
             };
         }
 
-        let best_feature = train
+        let features = train
             .feature_matrix
             .iter()
             .enumerate()
             .map(|(index, feature_vector)| {
-                split_feature(index, feature_vector, &train.target_vector)
-            })
-            .min_by(|a, b| a.loss.partial_cmp(&b.loss).unwrap_or(Equal))
+                split_feature(
+                    index,
+                    &train.feature_names[index],
+                    feature_vector,
+                    &train.target_vector,
+                )
+            });
+
+        let loss = features
+            .clone()
+            .map(|x| x.loss)
+            .min_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal))
             .unwrap();
+
+        let best_features = features
+            .filter(|f| f.loss == loss)
+            .collect::<Vec<SplitResult>>();
+        let best_feature = best_features.choose(&mut rand::thread_rng()).unwrap();
+
 
         let mut left_dataset = train.clone_without_data();
         let mut right_dataset = train.clone_without_data();
@@ -141,4 +158,35 @@ impl TreeNode {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_predict() {
+        let mut dataset = Dataset::read_csv("datasets/toy_test.csv", ";");
+        let root = TreeNode {
+            split: Some(2.),
+            prediction: 0.5,
+            samples: 2,
+            feature_name: Some("feature_a".to_string()),
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                split: None,
+                prediction: 0.,
+                samples: 1,
+                feature_name: None,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                split: None,
+                prediction: 1.,
+                samples: 1,
+                feature_name: None,
+                left: None,
+                right: None,
+            }))),
+        };
+
+        let expected = Dataset::read_csv("datasets/toy_test_predict.csv", ";");
+        root.predict(&mut dataset);
+        assert_eq!(expected, dataset);
+    }
 }
