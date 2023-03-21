@@ -183,7 +183,7 @@ mod test {
             feature_name: Some("feature_a".to_string()),
             left: Some(Rc::new(RefCell::new(TreeNode {
                 split: None,
-                prediction: 0.,
+                prediction: 1.,
                 samples: 1,
                 feature_name: None,
                 left: None,
@@ -191,7 +191,7 @@ mod test {
             }))),
             right: Some(Rc::new(RefCell::new(TreeNode {
                 split: None,
-                prediction: 1.,
+                prediction: 0.,
                 samples: 1,
                 feature_name: None,
                 left: None,
