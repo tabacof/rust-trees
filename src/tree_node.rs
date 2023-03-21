@@ -4,7 +4,9 @@ use crate::split_criteria::mean_squared_error_split_feature;
 use crate::split_criteria::SplitFunction;
 use crate::split_criteria::SplitResult;
 use crate::utils;
+use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
+use rand::SeedableRng;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 use std::{cell::RefCell, rc::Rc};
@@ -25,6 +27,7 @@ impl TreeNode {
         curr_depth: i32,
         max_depth: i32,
         split_feature: SplitFunction,
+        rng: &mut StdRng,
     ) -> TreeNode {
         if (curr_depth == max_depth) | (train.target_vector.len() == 1) {
             return TreeNode {
@@ -59,8 +62,8 @@ impl TreeNode {
         let best_features = features
             .filter(|f| f.loss == loss)
             .collect::<Vec<SplitResult>>();
-        let best_feature = best_features.choose(&mut rand::thread_rng()).unwrap();
 
+        let best_feature = best_features.choose(rng).unwrap();
 
         let mut left_dataset = train.clone_without_data();
         let mut right_dataset = train.clone_without_data();
@@ -99,27 +102,38 @@ impl TreeNode {
                 curr_depth + 1,
                 max_depth,
                 split_feature,
+                rng,
             )))),
             right: Some(Rc::new(RefCell::new(TreeNode::_train(
                 right_dataset,
                 curr_depth + 1,
                 max_depth,
                 split_feature,
+                rng,
             )))),
         }
     }
 
     pub fn train_reg(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
+        let mut rng = StdRng::seed_from_u64(42);
         Self::_train(
             train,
             curr_depth,
             max_depth,
             mean_squared_error_split_feature,
+            &mut rng,
         )
     }
 
     pub fn train_clf(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
-        Self::_train(train, curr_depth, max_depth, gini_coefficient_split_feature)
+        let mut rng = StdRng::seed_from_u64(42);
+        Self::_train(
+            train,
+            curr_depth,
+            max_depth,
+            gini_coefficient_split_feature,
+            &mut rng,
+        )
     }
 
     pub fn predict_row(&self, row: &HashMap<&String, f32>) -> f32 {
