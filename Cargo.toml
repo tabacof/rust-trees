@@ -1,9 +1,22 @@
 [package]
-name = "trees"
+name = "rustrees"
 version = "0.1.0"
 edition = "2021"
+authors = [
+    "Guilherme Lázari <guilhermelcs@gmail.com>",
+    "Pedro Tabacof <tabacof@gmail.com>",
+]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "rustrees"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
 
 [dependencies]
 rand = "0.8.5"
+pyo3 = { version = "0.18.1", features = ["extension-module"] }
+# pyo3 = "0.18.1"
+
+# [features]
+# extension-module = ["pyo3/extension-module"]
+# default = ["extension-module"]

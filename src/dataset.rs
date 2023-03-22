@@ -1,19 +1,16 @@
+use pyo3::prelude::*;
 use std::fs;
 
+#[pyclass]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Dataset {
-    pub(crate) feature_names: Vec<String>,
-    pub(crate) feature_matrix: Vec<Vec<f32>>,
-    pub(crate) target_name: String,
-    pub(crate) target_vector: Vec<f32>,
+    pub feature_names: Vec<String>,
+    pub feature_matrix: Vec<Vec<f32>>,
+    pub target_name: String,
+    pub target_vector: Vec<f32>,
 }
 
 impl Dataset {
-    pub fn read_csv(path: &str, sep: &str) -> Dataset {
-        let contents = fs::read_to_string(path).expect("Cannot read CSV file");
-        Self::_read_csv(&contents, sep)
-    }
-
     fn _read_csv(contents: &str, sep: &str) -> Dataset {
         let mut split_contents = contents.split('\n');
 
@@ -55,7 +52,23 @@ impl Dataset {
         }
     }
 
-    pub fn write_csv(self, path: &str, sep: &str) {
+    pub fn clone_without_data(&self) -> Dataset {
+        let mut clone = self.clone();
+        clone.feature_matrix = vec![];
+        clone.target_vector = vec![];
+        clone
+    }
+}
+
+#[pymethods]
+impl Dataset {
+    #[staticmethod]
+    pub fn read_csv(path: &str, sep: &str) -> Dataset {
+        let contents = fs::read_to_string(path).expect("Cannot read CSV file");
+        Self::_read_csv(&contents, sep)
+    }
+
+    pub fn write_csv(&self, path: &str, sep: &str) {
         let mut contents: String = self.feature_names.join(sep) + sep + &self.target_name + "\n";
 
         for i in 0..self.target_vector.len() {
@@ -66,13 +79,6 @@ impl Dataset {
         }
 
         fs::write(path, contents).expect("Unable to write file");
-    }
-
-    pub fn clone_without_data(&self) -> Dataset {
-        let mut clone = self.clone();
-        clone.feature_matrix = vec![];
-        clone.target_vector = vec![];
-        clone
     }
 }
 
@@ -94,6 +100,27 @@ mod tests {
         };
 
         let got = Dataset::_read_csv(csv_contents, ",");
+
+        assert_eq!(expected, got);
+    }
+
+    #[test]
+    fn test_clone_without_data() {
+        let dataset = Dataset {
+            feature_names: vec!["age".to_string(), "sex".to_string()],
+            feature_matrix: vec![vec![0.1, 1.0], vec![-0.5, 2.0]],
+            target_name: "target".to_string(),
+            target_vector: vec![5.0, 3.0],
+        };
+
+        let expected = Dataset {
+            feature_names: vec!["age".to_string(), "sex".to_string()],
+            feature_matrix: vec![],
+            target_name: "target".to_string(),
+            target_vector: vec![],
+        };
+
+        let got = dataset.clone_without_data();
 
         assert_eq!(expected, got);
     }

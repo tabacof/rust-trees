@@ -9,16 +9,77 @@ use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
-use std::{cell::RefCell, rc::Rc};
 
+use pyo3::prelude::*;
+
+#[pyclass]
 #[derive(Debug)]
 pub struct TreeNode {
     split: Option<f32>,
     prediction: f32,
     samples: usize,
     feature_name: Option<String>,
-    left: Option<Rc<RefCell<TreeNode>>>,
-    right: Option<Rc<RefCell<TreeNode>>>,
+    left: Option<Box<TreeNode>>,
+    right: Option<Box<TreeNode>>,
+}
+
+#[pymethods]
+impl TreeNode {
+    #[staticmethod]
+    pub fn train_reg(
+        train: Dataset,
+        curr_depth: i32,
+        max_depth: i32,
+        random_state: Option<u64>,
+    ) -> TreeNode {
+        let mut rng;
+        if let Some(seed) = random_state {
+            rng = StdRng::seed_from_u64(seed);
+        } else {
+            rng = StdRng::from_entropy();
+        }
+        Self::_train(
+            train,
+            curr_depth,
+            max_depth,
+            mean_squared_error_split_feature,
+            &mut rng,
+        )
+    }
+
+    #[staticmethod]
+    pub fn train_clf(
+        train: Dataset,
+        curr_depth: i32,
+        max_depth: i32,
+        random_state: Option<u64>,
+    ) -> TreeNode {
+        let mut rng;
+        if let Some(seed) = random_state {
+            rng = StdRng::seed_from_u64(seed);
+        } else {
+            rng = StdRng::from_entropy();
+        }
+        Self::_train(
+            train,
+            curr_depth,
+            max_depth,
+            gini_coefficient_split_feature,
+            &mut rng,
+        )
+    }
+
+    pub fn predict(&self, test: &Dataset) -> Vec<f32> {
+        let mut res = vec![];
+        for i in 0..test.target_vector.len() {
+            let mut feature_vector = HashMap::new();
+            for (j, feature) in test.feature_names.iter().enumerate() {
+                feature_vector.insert(feature, test.feature_matrix[j][i]);
+            }
+            res.push(self.predict_row(&feature_vector));
+        }
+        res
+    }
 }
 
 impl TreeNode {
@@ -56,7 +117,7 @@ impl TreeNode {
         let loss = features
             .clone()
             .map(|x| x.loss)
-            .min_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal))
+            .min_by(|a, b| a.partial_cmp(b).unwrap_or(Equal))
             .unwrap();
 
         let best_features = features
@@ -97,43 +158,21 @@ impl TreeNode {
             prediction: best_feature.prediction,
             samples: train.target_vector.len(),
             feature_name: Some(train.feature_names[best_feature.col_index].clone()),
-            left: Some(Rc::new(RefCell::new(TreeNode::_train(
+            left: Some(Box::new(TreeNode::_train(
                 left_dataset,
                 curr_depth + 1,
                 max_depth,
                 split_feature,
                 rng,
-            )))),
-            right: Some(Rc::new(RefCell::new(TreeNode::_train(
+            ))),
+            right: Some(Box::new(TreeNode::_train(
                 right_dataset,
                 curr_depth + 1,
                 max_depth,
                 split_feature,
                 rng,
-            )))),
+            ))),
         }
-    }
-
-    pub fn train_reg(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
-        let mut rng = StdRng::seed_from_u64(42);
-        Self::_train(
-            train,
-            curr_depth,
-            max_depth,
-            mean_squared_error_split_feature,
-            &mut rng,
-        )
-    }
-
-    pub fn train_clf(train: Dataset, curr_depth: i32, max_depth: i32) -> TreeNode {
-        let mut rng = StdRng::seed_from_u64(42);
-        Self::_train(
-            train,
-            curr_depth,
-            max_depth,
-            gini_coefficient_split_feature,
-            &mut rng,
-        )
     }
 
     pub fn predict_row(&self, row: &HashMap<&String, f32>) -> f32 {
@@ -142,30 +181,18 @@ impl TreeNode {
                 self.right
                     .as_ref()
                     .expect("Right node expected")
-                    .borrow()
+                    // .borrow()
                     .predict_row(row)
             } else {
                 self.left
                     .as_ref()
                     .expect("Left node expected")
-                    .borrow()
+                    // .borrow()
                     .predict_row(row)
             }
         } else {
             self.prediction
         }
-    }
-
-    pub fn predict(&self, test: &mut Dataset) {
-        let mut res = vec![];
-        for i in 0..test.target_vector.len() {
-            let mut feature_vector = HashMap::new();
-            for (j, feature) in test.feature_names.iter().enumerate() {
-                feature_vector.insert(feature, test.feature_matrix[j][i]);
-            }
-            res.push(self.predict_row(&feature_vector));
-        }
-        test.target_vector = res;
     }
 }
 
@@ -181,22 +208,22 @@ mod test {
             prediction: 0.5,
             samples: 2,
             feature_name: Some("feature_a".to_string()),
-            left: Some(Rc::new(RefCell::new(TreeNode {
+            left: Some(Box::new(TreeNode {
                 split: None,
                 prediction: 1.,
                 samples: 1,
                 feature_name: None,
                 left: None,
                 right: None,
-            }))),
-            right: Some(Rc::new(RefCell::new(TreeNode {
+            })),
+            right: Some(Box::new(TreeNode {
                 split: None,
                 prediction: 0.,
                 samples: 1,
                 feature_name: None,
                 left: None,
                 right: None,
-            }))),
+            })),
         };
 
         let expected = Dataset::read_csv("datasets/toy_test_predict.csv", ";");
