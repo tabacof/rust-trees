@@ -181,13 +181,11 @@ impl TreeNode {
                 self.right
                     .as_ref()
                     .expect("Right node expected")
-                    // .borrow()
                     .predict_row(row)
             } else {
                 self.left
                     .as_ref()
                     .expect("Left node expected")
-                    // .borrow()
                     .predict_row(row)
             }
         } else {
