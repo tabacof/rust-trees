@@ -15,8 +15,3 @@ crate-type = ["cdylib"]
 [dependencies]
 rand = "0.8.5"
 pyo3 = { version = "0.18.1", features = ["extension-module"] }
-# pyo3 = "0.18.1"
-
-# [features]
-# extension-module = ["pyo3/extension-module"]
-# default = ["extension-module"]
