@@ -1,10 +1,12 @@
 use std::cmp::Ordering::Equal;
+use permutation;
 
 pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
-    let mut pairs: Vec<(&f32, &f32)> = a.iter().zip(b).collect();
-    pairs.sort_by(|&a, &b| a.0.partial_cmp(b.0).unwrap_or(Equal));
+    let a_sorter = permutation::sort_by(a, |a, b| a.partial_cmp(b).unwrap_or(Equal));
 
-    pairs.into_iter().map(|(x, y)| (*x, *y)).unzip()
+    let a = a_sorter.apply_slice(a);
+    let b = a_sorter.apply_slice(b);
+    (a, b)
 }
 
 pub fn float_avg(x: &[f32]) -> f32 {

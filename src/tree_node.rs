@@ -10,6 +10,7 @@ use rand::SeedableRng;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 
+use permutation;
 use pyo3::prelude::*;
 
 #[pyclass]
@@ -129,11 +130,13 @@ impl TreeNode {
         let mut left_dataset = train.clone_without_data();
         let mut right_dataset = train.clone_without_data();
 
+        let best_feature_sorter =
+            permutation::sort_by(&train.feature_matrix[best_feature.col_index], |a, b| {
+                a.partial_cmp(b).unwrap_or(Equal)
+            });
+
         for i in 0..train.feature_names.len() {
-            let (_, sorted_feature) = utils::sort_two_vectors(
-                &train.feature_matrix[best_feature.col_index],
-                &train.feature_matrix[i],
-            );
+            let sorted_feature = best_feature_sorter.apply_slice(&train.feature_matrix[i]);
 
             let mut first_half = sorted_feature.clone();
             let second_half = first_half.split_off(best_feature.row_index);
