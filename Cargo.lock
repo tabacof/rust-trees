@@ -92,6 +92,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "permutation"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df202b0b0f5b8e389955afd5f27b007b00fb948162953f1db9c70d2c7e3157d7"
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -218,6 +224,7 @@ dependencies = [
 name = "rustrees"
 version = "0.1.0"
 dependencies = [
+ "permutation",
  "pyo3",
  "rand",
 ]
