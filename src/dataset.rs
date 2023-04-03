@@ -5,6 +5,7 @@ use std::fs;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Dataset {
     pub feature_names: Vec<String>,
+    pub feature_uniform: Vec<bool>,
     pub feature_matrix: Vec<Vec<f32>>,
     pub target_name: String,
     pub target_vector: Vec<f32>,
@@ -43,9 +44,11 @@ impl Dataset {
         }
 
         let target_name = feature_names.pop().expect("We need at least one column");
+        let feature_uniform = vec![false; feature_names.len()];
 
         Dataset {
             feature_names,
+            feature_uniform,
             feature_matrix,
             target_name,
             target_vector,
@@ -94,6 +97,7 @@ mod tests {
 
         let expected = Dataset {
             feature_names: vec!["age".to_string(), "sex".to_string()],
+            feature_uniform: vec![false, false],
             feature_matrix: vec![vec![0.1, 1.0], vec![-0.5, 2.0]],
             target_name: "target".to_string(),
             target_vector: vec![5.0, 3.0],
@@ -108,6 +112,7 @@ mod tests {
     fn test_clone_without_data() {
         let dataset = Dataset {
             feature_names: vec!["age".to_string(), "sex".to_string()],
+            feature_uniform: vec![false, false],
             feature_matrix: vec![vec![0.1, 1.0], vec![-0.5, 2.0]],
             target_name: "target".to_string(),
             target_vector: vec![5.0, 3.0],
@@ -115,6 +120,7 @@ mod tests {
 
         let expected = Dataset {
             feature_names: vec!["age".to_string(), "sex".to_string()],
+            feature_uniform: vec![false, false],
             feature_matrix: vec![],
             target_name: "target".to_string(),
             target_vector: vec![],

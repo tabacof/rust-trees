@@ -1,7 +1,12 @@
 use crate::utils;
 
-pub(crate) type SplitFunction =
-    fn(col_index: usize, feature_name: &str, feature: &[f32], target: &[f32]) -> SplitResult;
+pub(crate) type SplitFunction = fn(
+    col_index: usize,
+    feature_name: &str,
+    min_samples_leaf: i32,
+    feature: &[f32],
+    target: &[f32],
+) -> SplitResult;
 
 //pub(crate) trait SplitCriteria {
 //    fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
@@ -23,6 +28,7 @@ pub(crate) struct SplitResult {
 pub(crate) fn mean_squared_error_split_feature(
     col_index: usize,
     feature_name: &str,
+    min_samples_leaf: i32,
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult {
@@ -48,7 +54,7 @@ pub(crate) fn mean_squared_error_split_feature(
         })
         .collect();
 
-    for i in 1..sorted_feature.len() {
+    for i in min_samples_leaf as usize..((sorted_feature.len() - min_samples_leaf as usize) + 1) {
         if sorted_feature[i] > last {
             //    var = \sum_i^n (y_i - y_bar) ** 2
             //           = (\sum_i^n y_i ** 2) - n_samples * y_bar ** 2
@@ -89,6 +95,7 @@ pub(crate) fn mean_squared_error_split_feature(
 pub(crate) fn gini_coefficient_split_feature(
     col_index: usize,
     feature_name: &str,
+    min_samples_leaf: i32,
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult {
@@ -106,7 +113,7 @@ pub(crate) fn gini_coefficient_split_feature(
         })
         .collect();
 
-    for i in 1..sorted_feature.len() {
+    for i in min_samples_leaf as usize..((sorted_feature.len() - min_samples_leaf as usize) + 1) {
         if sorted_feature[i] > last {
             let left_cumsum = cumsum[i - 1] / (i as f32);
             let right_cumsum =
@@ -149,7 +156,13 @@ mod test {
     #[test]
     fn test_gini_coefficient_split_feature() {
         assert_eq!(
-            mean_squared_error_split_feature(1, "feature_a", &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            mean_squared_error_split_feature(
+                1,
+                "feature_a",
+                1,
+                &vec![2.0, 0.0, 1.0],
+                &vec![-1.0, 0.0, 1.0]
+            ),
             SplitResult {
                 col_index: 1,
                 feature_name: "feature_a".to_string(),
@@ -164,7 +177,13 @@ mod test {
     #[test]
     fn test_mean_squared_error() {
         assert_eq!(
-            mean_squared_error_split_feature(1, "feature_a", &vec![2.0, 0.0, 1.0], &vec![-1.0, 0.0, 1.0]),
+            mean_squared_error_split_feature(
+                1,
+                "feature_a",
+                1,
+                &vec![2.0, 0.0, 1.0],
+                &vec![-1.0, 0.0, 1.0]
+            ),
             SplitResult {
                 col_index: 1,
                 feature_name: "feature_a".to_string(),
