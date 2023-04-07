@@ -24,6 +24,27 @@ pub struct TreeNode {
     right: Option<Box<TreeNode>>,
 }
 
+#[derive(Clone, Copy)]
+pub struct TrainOptions {
+    min_samples_leaf: i32,
+    max_depth: i32,
+}
+
+impl TrainOptions {
+    fn defaultOptions() -> TrainOptions {
+        TrainOptions {
+            max_depth: 5,
+            min_samples_leaf: 1,
+        }
+    }
+    fn new(max_depth: i32, min_samples_leaf: i32) -> TrainOptions {
+        TrainOptions {
+            min_samples_leaf,
+            max_depth,
+        }
+    }
+}
+
 #[pymethods]
 impl TreeNode {
     #[staticmethod]
@@ -31,6 +52,7 @@ impl TreeNode {
         train: Dataset,
         curr_depth: i32,
         max_depth: i32,
+        min_samples_leaf: Option<i32>,
         random_state: Option<u64>,
     ) -> TreeNode {
         let mut rng;
@@ -39,10 +61,15 @@ impl TreeNode {
         } else {
             rng = StdRng::from_entropy();
         }
+        let op = TrainOptions {
+            max_depth,
+            min_samples_leaf: min_samples_leaf
+                .unwrap_or(TrainOptions::defaultOptions().min_samples_leaf),
+        };
         Self::_train(
             train,
             curr_depth,
-            max_depth,
+            op,
             mean_squared_error_split_feature,
             &mut rng,
         )
@@ -53,6 +80,7 @@ impl TreeNode {
         train: Dataset,
         curr_depth: i32,
         max_depth: i32,
+        min_samples_leaf: Option<i32>,
         random_state: Option<u64>,
     ) -> TreeNode {
         let mut rng;
@@ -61,10 +89,15 @@ impl TreeNode {
         } else {
             rng = StdRng::from_entropy();
         }
+        let op = TrainOptions {
+            max_depth,
+            min_samples_leaf: min_samples_leaf
+                .unwrap_or(TrainOptions::defaultOptions().min_samples_leaf),
+        };
         Self::_train(
             train,
             curr_depth,
-            max_depth,
+            op,
             gini_coefficient_split_feature,
             &mut rng,
         )
@@ -87,11 +120,14 @@ impl TreeNode {
     fn _train(
         train: Dataset,
         curr_depth: i32,
-        max_depth: i32,
+        train_options: TrainOptions,
         split_feature: SplitFunction,
         rng: &mut StdRng,
     ) -> TreeNode {
-        if (curr_depth == max_depth) | (train.target_vector.len() == 1) {
+        if (curr_depth == train_options.max_depth) | (train.target_vector.len() == 1)
+            || (train_options.min_samples_leaf > train.target_vector.len() as i32 / 2)
+            || (train.feature_uniform.iter().all(|&x| x))
+        {
             return TreeNode {
                 split: None,
                 prediction: utils::float_avg(&train.target_vector),
@@ -106,10 +142,12 @@ impl TreeNode {
             .feature_matrix
             .iter()
             .enumerate()
+            .filter(|(index, _)| !train.feature_uniform[*index])
             .map(|(index, feature_vector)| {
                 split_feature(
                     index,
                     &train.feature_names[index],
+                    train_options.min_samples_leaf,
                     feature_vector,
                     &train.target_vector,
                 )
@@ -142,7 +180,11 @@ impl TreeNode {
             let second_half = first_half.split_off(best_feature.row_index);
 
             left_dataset.feature_matrix.push(first_half);
+            let first = left_dataset.feature_matrix[i][0];
+            left_dataset.feature_uniform[i] = left_dataset.feature_matrix[i].iter().all(|&x| x == first);
             right_dataset.feature_matrix.push(second_half);
+            let first = right_dataset.feature_matrix[i][0];
+            right_dataset.feature_uniform[i] = right_dataset.feature_matrix[i].iter().all(|&x| x == first);
         }
 
         let (_, sorted_target) = utils::sort_two_vectors(
@@ -164,14 +206,14 @@ impl TreeNode {
             left: Some(Box::new(TreeNode::_train(
                 left_dataset,
                 curr_depth + 1,
-                max_depth,
+                train_options,
                 split_feature,
                 rng,
             ))),
             right: Some(Box::new(TreeNode::_train(
                 right_dataset,
                 curr_depth + 1,
-                max_depth,
+                train_options,
                 split_feature,
                 rng,
             ))),
