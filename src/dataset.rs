@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::fs;
 
 #[pyclass]
@@ -60,6 +61,32 @@ impl Dataset {
         clone.feature_matrix = vec![];
         clone.target_vector = vec![];
         clone
+    }
+
+    pub fn n_samples(&self) -> usize {
+        self.target_vector.len()
+    }
+
+    pub fn bootstrap(&self, rng: &mut StdRng) -> Dataset {
+        let mut feature_matrix: Vec<Vec<f32>> = vec![vec![]; self.feature_names.len()];
+        let mut target_vector: Vec<f32> = Vec::new();
+
+        for _ in 0..self.target_vector.len() {
+            let i = rng.gen_range(0..self.target_vector.len());
+
+            for j in 0..self.feature_names.len() {
+                feature_matrix[j].push(self.feature_matrix[j][i]);
+            }
+            target_vector.push(self.target_vector[i]);
+        }
+
+        Dataset {
+            feature_names: self.feature_names.clone(),
+            feature_uniform: self.feature_uniform.clone(),
+            feature_matrix,
+            target_name: self.target_name.clone(),
+            target_vector,
+        }
     }
 }
 

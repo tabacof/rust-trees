@@ -16,3 +16,4 @@ crate-type = ["cdylib"]
 rand = "0.8.5"
 pyo3 = { version = "0.18.1", features = ["extension-module"] }
 permutation = "0.4.1"
+rayon = "1.7.0"

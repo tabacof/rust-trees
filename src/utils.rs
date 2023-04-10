@@ -1,5 +1,4 @@
 use std::cmp::Ordering::Equal;
-use permutation;
 
 pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
     let a_sorter = permutation::sort_by(a, |a, b| a.partial_cmp(b).unwrap_or(Equal));
