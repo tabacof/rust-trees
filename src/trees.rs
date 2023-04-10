@@ -7,13 +7,12 @@ use crate::utils;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
+use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 
-use permutation;
 use pyo3::prelude::*;
 
-#[pyclass]
 #[derive(Debug)]
 pub struct TreeNode {
     split: Option<f32>,
@@ -24,88 +23,185 @@ pub struct TreeNode {
     right: Option<Box<TreeNode>>,
 }
 
+#[pyclass]
+pub struct DecisionTree {
+    root: TreeNode,
+    params: TrainOptions,
+}
+
+#[pyclass]
+pub struct RandomForest {
+    roots: Vec<TreeNode>,
+    params: TrainOptions,
+}
+
 #[derive(Clone, Copy)]
 pub struct TrainOptions {
     min_samples_leaf: i32,
     max_depth: i32,
+    n_estimators: Option<i32>,
 }
 
 impl TrainOptions {
-    fn defaultOptions() -> TrainOptions {
+    fn default_options() -> TrainOptions {
         TrainOptions {
-            max_depth: 5,
+            max_depth: 10,
             min_samples_leaf: 1,
-        }
-    }
-    fn new(max_depth: i32, min_samples_leaf: i32) -> TrainOptions {
-        TrainOptions {
-            min_samples_leaf,
-            max_depth,
+            n_estimators: None,
         }
     }
 }
 
 #[pymethods]
-impl TreeNode {
+impl RandomForest {
     #[staticmethod]
     pub fn train_reg(
         train: Dataset,
-        curr_depth: i32,
-        max_depth: i32,
+        n_estimators: i32,
+        max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
         random_state: Option<u64>,
-    ) -> TreeNode {
-        let mut rng;
-        if let Some(seed) = random_state {
-            rng = StdRng::seed_from_u64(seed);
-        } else {
-            rng = StdRng::from_entropy();
-        }
-        let op = TrainOptions {
-            max_depth,
+    ) -> RandomForest {
+        let params = TrainOptions {
+            max_depth: max_depth.unwrap_or(TrainOptions::default_options().max_depth),
             min_samples_leaf: min_samples_leaf
-                .unwrap_or(TrainOptions::defaultOptions().min_samples_leaf),
+                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+            n_estimators: Some(n_estimators),
         };
-        Self::_train(
-            train,
-            curr_depth,
-            op,
-            mean_squared_error_split_feature,
-            &mut rng,
-        )
+
+        let roots: Vec<TreeNode> = (0..n_estimators)
+            .into_par_iter()
+            .map(|_| {
+                let mut rng = StdRng::from_entropy();
+
+                let bootstrap = train.bootstrap(&mut rng);
+                TreeNode::_train(
+                    bootstrap,
+                    0,
+                    params,
+                    mean_squared_error_split_feature,
+                    &mut rng,
+                )
+            })
+            .collect();
+
+        RandomForest { roots, params }
     }
 
     #[staticmethod]
     pub fn train_clf(
         train: Dataset,
-        curr_depth: i32,
+        n_estimators: i32,
+        max_depth: Option<i32>,
+        min_samples_leaf: Option<i32>,
+        random_state: Option<u64>,
+    ) -> RandomForest {
+        let params = TrainOptions {
+            max_depth: max_depth.unwrap_or(TrainOptions::default_options().max_depth),
+            min_samples_leaf: min_samples_leaf
+                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+            n_estimators: Some(n_estimators),
+        };
+
+        let roots: Vec<TreeNode> = (0..n_estimators)
+            .into_par_iter()
+            .map(|_| {
+                let mut rng = StdRng::from_entropy();
+
+                let bootstrap = train.bootstrap(&mut rng);
+                TreeNode::_train(
+                    bootstrap,
+                    0,
+                    params,
+                    mean_squared_error_split_feature,
+                    &mut rng,
+                )
+            })
+            .collect();
+
+        RandomForest { roots, params }
+    }
+
+    pub fn predict(&self, x: &Dataset) -> Vec<f32> {
+        let mut predictions = Vec::new();
+        for root in &self.roots {
+            predictions.push(root.predict(x));
+        }
+
+        let mut final_predictions = vec![0.0; x.n_samples()];
+
+        for i in 0..x.n_samples() {
+            let mut sum = 0.0;
+            for j in 0..predictions.len() {
+                sum += predictions[j][i];
+            }
+            final_predictions[i] = sum / predictions.len() as f32;
+        }
+        final_predictions
+    }
+}
+
+#[pymethods]
+impl DecisionTree {
+    #[staticmethod]
+    pub fn train_reg(
+        train: Dataset,
         max_depth: i32,
         min_samples_leaf: Option<i32>,
         random_state: Option<u64>,
-    ) -> TreeNode {
+    ) -> DecisionTree {
         let mut rng;
         if let Some(seed) = random_state {
             rng = StdRng::seed_from_u64(seed);
         } else {
             rng = StdRng::from_entropy();
         }
-        let op = TrainOptions {
+        let params = TrainOptions {
             max_depth,
             min_samples_leaf: min_samples_leaf
-                .unwrap_or(TrainOptions::defaultOptions().min_samples_leaf),
+                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+            n_estimators: None,
         };
-        Self::_train(
-            train,
-            curr_depth,
-            op,
-            gini_coefficient_split_feature,
-            &mut rng,
-        )
+        DecisionTree {
+            root: TreeNode::_train(train, 0, params, mean_squared_error_split_feature, &mut rng),
+            params: params,
+        }
+    }
+
+    #[staticmethod]
+    pub fn train_clf(
+        train: Dataset,
+        max_depth: i32,
+        min_samples_leaf: Option<i32>,
+        random_state: Option<u64>,
+    ) -> DecisionTree {
+        let mut rng;
+        if let Some(seed) = random_state {
+            rng = StdRng::seed_from_u64(seed);
+        } else {
+            rng = StdRng::from_entropy();
+        }
+        let params = TrainOptions {
+            max_depth,
+            min_samples_leaf: min_samples_leaf
+                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+            n_estimators: None,
+        };
+        DecisionTree {
+            root: TreeNode::_train(train, 0, params, gini_coefficient_split_feature, &mut rng),
+            params: params,
+        }
     }
 
     pub fn predict(&self, test: &Dataset) -> Vec<f32> {
+        self.root.predict(test)
+    }
+}
+
+impl TreeNode {
+    pub fn predict(&self, test: &Dataset) -> Vec<f32> {
         let mut res = vec![];
-        for i in 0..test.target_vector.len() {
+        for i in 0..test.n_samples() {
             let mut feature_vector = HashMap::new();
             for (j, feature) in test.feature_names.iter().enumerate() {
                 feature_vector.insert(feature, test.feature_matrix[j][i]);
@@ -114,9 +210,7 @@ impl TreeNode {
         }
         res
     }
-}
 
-impl TreeNode {
     fn _train(
         train: Dataset,
         curr_depth: i32,
@@ -124,14 +218,14 @@ impl TreeNode {
         split_feature: SplitFunction,
         rng: &mut StdRng,
     ) -> TreeNode {
-        if (curr_depth == train_options.max_depth) | (train.target_vector.len() == 1)
-            || (train_options.min_samples_leaf > train.target_vector.len() as i32 / 2)
+        if (curr_depth == train_options.max_depth) | (train.n_samples() == 1)
+            || (train_options.min_samples_leaf > train.n_samples() as i32 / 2)
             || (train.feature_uniform.iter().all(|&x| x))
         {
             return TreeNode {
                 split: None,
                 prediction: utils::float_avg(&train.target_vector),
-                samples: train.target_vector.len(),
+                samples: train.n_samples(),
                 feature_name: None,
                 left: None,
                 right: None,
@@ -181,10 +275,12 @@ impl TreeNode {
 
             left_dataset.feature_matrix.push(first_half);
             let first = left_dataset.feature_matrix[i][0];
-            left_dataset.feature_uniform[i] = left_dataset.feature_matrix[i].iter().all(|&x| x == first);
+            left_dataset.feature_uniform[i] =
+                left_dataset.feature_matrix[i].iter().all(|&x| x == first);
             right_dataset.feature_matrix.push(second_half);
             let first = right_dataset.feature_matrix[i][0];
-            right_dataset.feature_uniform[i] = right_dataset.feature_matrix[i].iter().all(|&x| x == first);
+            right_dataset.feature_uniform[i] =
+                right_dataset.feature_matrix[i].iter().all(|&x| x == first);
         }
 
         let (_, sorted_target) = utils::sort_two_vectors(
@@ -201,7 +297,7 @@ impl TreeNode {
         TreeNode {
             split: Some(best_feature.split),
             prediction: best_feature.prediction,
-            samples: train.target_vector.len(),
+            samples: train.n_samples(),
             feature_name: Some(train.feature_names[best_feature.col_index].clone()),
             left: Some(Box::new(TreeNode::_train(
                 left_dataset,
@@ -269,8 +365,17 @@ mod test {
             })),
         };
 
+        let dt = DecisionTree {
+            root: root,
+            params: TrainOptions {
+                max_depth: 1,
+                min_samples_leaf: 1,
+                n_estimators: None,
+            },
+        };
+
         let expected = Dataset::read_csv("datasets/toy_test_predict.csv", ";");
-        root.predict(&mut dataset);
+        dt.predict(&mut dataset);
         assert_eq!(expected, dataset);
     }
 }
