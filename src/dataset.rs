@@ -1,6 +1,16 @@
 use pyo3::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::fs;
+use arrow::array::{ArrayRef, Float32Array, StringArray, UInt32Array};
+use arrow::compute::cast;
+use arrow::csv;
+use arrow::error::Result;
+use arrow::util::pretty::print_batches;
+use std::fs::File;
+use std::iter::IntoIterator;
+use arrow::datatypes::DataType;
+
+
 
 #[pyclass]
 #[derive(Clone, Debug, PartialEq)]
@@ -13,7 +23,44 @@ pub struct Dataset {
 }
 
 impl Dataset {
-    fn _read_csv(contents: &str, sep: &str) -> Dataset {
+    fn _read_csv(path: &str, sep: &str) -> Dataset {
+        let file = File::open(path).unwrap();
+        let builder = csv::ReaderBuilder::new()
+            .with_delimiter(sep.as_bytes()[0])
+            .has_header(true)
+            .infer_schema(Some(100));
+        let mut csv = builder.build(file).unwrap();
+        let batch = csv.next().unwrap().unwrap();
+
+        let feature_names = batch
+            .schema()
+            .fields()
+            .iter()
+            .map(|f| f.name().to_string())
+            .collect::<Vec<String>>();
+
+        let feature_matrix: Vec<Vec<f32>> = batch
+            .columns()
+            .iter()
+            .map(|c| cast(c, &DataType::Float32).unwrap())
+            .map(|c| {
+                c.as_any()
+                    .downcast_ref::<Float32Array>()
+                    .unwrap()
+                    .values()
+                    .to_vec()
+            })
+            .collect::<Vec<_>>();
+
+        Dataset {
+            feature_names: feature_names[0..feature_names.len() - 1].to_vec(),
+            feature_uniform: vec![false; feature_names.len() - 1],
+            feature_matrix: feature_matrix[0..feature_matrix.len() - 1].to_vec(),
+            target_name: feature_names.last().unwrap().to_string(),
+            target_vector: feature_matrix.last().unwrap().to_vec(),
+        }
+    }
+    fn _read_csv2(contents: &str, sep: &str) -> Dataset {
         let mut split_contents = contents.split('\n');
 
         let mut feature_names: Vec<String> = split_contents
@@ -94,8 +141,9 @@ impl Dataset {
 impl Dataset {
     #[staticmethod]
     pub fn read_csv(path: &str, sep: &str) -> Dataset {
-        let contents = fs::read_to_string(path).expect("Cannot read CSV file");
-        Self::_read_csv(&contents, sep)
+        println!("Reading CSV file {}", path);
+        //let contents = fs::read_to_string(path).expect("Cannot read CSV file");
+        Self::_read_csv(path, sep)
     }
 
     pub fn write_csv(&self, path: &str, sep: &str) {
@@ -118,19 +166,16 @@ mod tests {
 
     #[test]
     fn test_read_csv() {
-        let csv_contents = "age,sex,target
-0.1,-0.5,5
-1,2,3";
+        let got = Dataset::read_csv("datasets/toy_test.csv", ";");
 
         let expected = Dataset {
-            feature_names: vec!["age".to_string(), "sex".to_string()],
+            feature_names: vec!["feature_a".to_string(), "feature_b".to_string()],
             feature_uniform: vec![false, false],
-            feature_matrix: vec![vec![0.1, 1.0], vec![-0.5, 2.0]],
+            feature_matrix: vec![vec![1., 3.], vec![2., 4.]],
             target_name: "target".to_string(),
-            target_vector: vec![5.0, 3.0],
+            target_vector: vec![1.0, 0.0],
         };
 
-        let got = Dataset::_read_csv(csv_contents, ",");
 
         assert_eq!(expected, got);
     }
