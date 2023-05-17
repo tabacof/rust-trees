@@ -3,7 +3,6 @@ mod split_criteria;
 mod tests;
 mod trees;
 mod utils;
-mod arrow_internal;
 
 pub use dataset::Dataset;
 pub use trees::DecisionTree;
