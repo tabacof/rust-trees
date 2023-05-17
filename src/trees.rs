@@ -71,9 +71,14 @@ impl RandomForest {
 
         let roots: Vec<TreeNode> = (0..n_estimators)
             .into_par_iter()
-            .map(|_| {
-                let mut rng = StdRng::from_entropy();
-
+            .map(|i| {
+                let mut rng;
+                if let Some(seed) = random_state {
+                    rng = StdRng::seed_from_u64(seed+i as u64);
+                } else {
+                    rng = StdRng::from_entropy();
+                }
+                
                 let bootstrap = train.bootstrap(&mut rng);
                 TreeNode::_train(
                     bootstrap,
@@ -105,8 +110,13 @@ impl RandomForest {
 
         let roots: Vec<TreeNode> = (0..n_estimators)
             .into_par_iter()
-            .map(|_| {
-                let mut rng = StdRng::from_entropy();
+            .map(|i| {
+                let mut rng;
+                if let Some(seed) = random_state {
+                    rng = StdRng::seed_from_u64(seed+i as u64);
+                } else {
+                    rng = StdRng::from_entropy();
+                }
 
                 let bootstrap = train.bootstrap(&mut rng);
                 TreeNode::_train(
@@ -164,7 +174,7 @@ impl DecisionTree {
         };
         DecisionTree {
             root: TreeNode::_train(train, 0, params, mean_squared_error_split_feature, &mut rng),
-            params: params,
+            params,
         }
     }
 
@@ -189,7 +199,7 @@ impl DecisionTree {
         };
         DecisionTree {
             root: TreeNode::_train(train, 0, params, gini_coefficient_split_feature, &mut rng),
-            params: params,
+            params,
         }
     }
 
