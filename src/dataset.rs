@@ -1,13 +1,11 @@
 use pyo3::prelude::*;
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::{rngs::StdRng, Rng};
 use std::fs;
-use arrow::array::{ArrayRef, Float32Array, StringArray, UInt32Array};
+use arrow::array::{Float32Array};
+use arrow::record_batch::RecordBatch;
 use arrow::compute::cast;
 use arrow::csv;
-use arrow::error::Result;
-use arrow::util::pretty::print_batches;
 use std::fs::File;
-use std::iter::IntoIterator;
 use arrow::datatypes::DataType;
 
 
@@ -23,6 +21,21 @@ pub struct Dataset {
 }
 
 impl Dataset {
+    fn _read_batch(batch: RecordBatch) -> Vec<Vec<f32>>{
+        batch
+        .columns()
+        .iter()
+        .map(|c| cast(c, &DataType::Float32).unwrap())
+        .map(|c| {
+            c.as_any()
+                .downcast_ref::<Float32Array>()
+                .unwrap()
+                .values()
+                .to_vec()
+        })
+        .collect::<Vec<_>>()
+    }
+
     fn _read_csv(path: &str, sep: &str) -> Dataset {
         let file = File::open(path).unwrap();
         let builder = csv::ReaderBuilder::new()
@@ -39,18 +52,15 @@ impl Dataset {
             .map(|f| f.name().to_string())
             .collect::<Vec<String>>();
 
-        let feature_matrix: Vec<Vec<f32>> = batch
-            .columns()
-            .iter()
-            .map(|c| cast(c, &DataType::Float32).unwrap())
-            .map(|c| {
-                c.as_any()
-                    .downcast_ref::<Float32Array>()
-                    .unwrap()
-                    .values()
-                    .to_vec()
-            })
-            .collect::<Vec<_>>();
+        let mut feature_matrix: Vec<Vec<f32>> = Dataset::_read_batch(batch);
+
+        for b in csv {
+            let batch = b.unwrap();
+            let mut batch_matrix = Dataset::_read_batch(batch);
+            for i in 0..feature_matrix.len() {
+                feature_matrix[i].append(&mut batch_matrix[i]);
+            }
+        }
 
         Dataset {
             feature_names: feature_names[0..feature_names.len() - 1].to_vec(),
@@ -58,48 +68,6 @@ impl Dataset {
             feature_matrix: feature_matrix[0..feature_matrix.len() - 1].to_vec(),
             target_name: feature_names.last().unwrap().to_string(),
             target_vector: feature_matrix.last().unwrap().to_vec(),
-        }
-    }
-    fn _read_csv2(contents: &str, sep: &str) -> Dataset {
-        let mut split_contents = contents.split('\n');
-
-        let mut feature_names: Vec<String> = split_contents
-            .next()
-            .expect("Cannot read columns")
-            .split(sep)
-            .map(str::trim)
-            .map(String::from)
-            .collect();
-
-        let mut feature_matrix: Vec<Vec<f32>> = vec![vec![]; feature_names.len() - 1];
-        let mut target_vector: Vec<f32> = Vec::new();
-
-        for (line, row) in split_contents.enumerate() {
-            if !row.is_empty() {
-                let cols = row.split(sep);
-                if cols.count() != feature_names.len() {
-                    panic!("Wrong number of columns at line {}", line);
-                }
-                for (i, col) in row.split(sep).enumerate() {
-                    let col_val = col.trim().parse::<f32>().unwrap_or(f32::NAN);
-                    if i == feature_names.len() - 1 {
-                        target_vector.push(col_val);
-                    } else {
-                        feature_matrix[i].push(col_val);
-                    }
-                }
-            }
-        }
-
-        let target_name = feature_names.pop().expect("We need at least one column");
-        let feature_uniform = vec![false; feature_names.len()];
-
-        Dataset {
-            feature_names,
-            feature_uniform,
-            feature_matrix,
-            target_name,
-            target_vector,
         }
     }
 

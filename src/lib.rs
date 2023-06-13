@@ -6,6 +6,7 @@ mod utils;
 
 pub use dataset::Dataset;
 pub use trees::DecisionTree;
+pub use trees::RandomForest;
 pub use utils::*;
 
 use pyo3::prelude::*;
@@ -14,5 +15,6 @@ use pyo3::prelude::*;
 fn rustrees(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<Dataset>()?;
     m.add_class::<DecisionTree>()?;
+    m.add_class::<RandomForest>()?;
     Ok(())
 }
