@@ -7,8 +7,9 @@ use arrow::compute::cast;
 use arrow::csv;
 use std::fs::File;
 use arrow::datatypes::DataType;
+use arrow::pyarrow::PyArrowConvert;
 
-
+use pyo3::types::PyAny;
 
 #[pyclass]
 #[derive(Clone, Debug, PartialEq)]
@@ -21,6 +22,28 @@ pub struct Dataset {
 }
 
 impl Dataset {
+
+    fn _from_pyarrow(df: &PyAny) -> Dataset {
+        let batch = RecordBatch::from_pyarrow(df).unwrap();
+        
+        let feature_names = batch
+            .schema()
+            .fields()
+            .iter()
+            .map(|f| f.name().to_string())
+            .collect::<Vec<String>>();
+
+        let feature_matrix: Vec<Vec<f32>> = Dataset::_read_batch(batch);
+
+        Dataset {
+            feature_names: feature_names[0..feature_names.len() - 1].to_vec(),
+            feature_uniform: vec![false; feature_names.len() - 1],
+            feature_matrix: feature_matrix[0..feature_matrix.len() - 1].to_vec(),
+            target_name: feature_names.last().unwrap().to_string(),
+            target_vector: feature_matrix.last().unwrap().to_vec(),
+        }       
+    }
+
     fn _read_batch(batch: RecordBatch) -> Vec<Vec<f32>>{
         batch
         .columns()
@@ -125,6 +148,11 @@ impl Dataset {
         }
 
         fs::write(path, contents).expect("Unable to write file");
+    }
+
+    #[staticmethod]
+    pub fn from_pyarrow(df: &PyAny) -> Dataset {
+        Self::_from_pyarrow(df)
     }
 }
 

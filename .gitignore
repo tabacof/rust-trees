@@ -3,3 +3,5 @@
 .vscode/
 .ipynb_checkpoints/
 .env/
+__pycache__/
+*.cpython-*
