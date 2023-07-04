@@ -1,0 +1,9 @@
+
+[tool.maturin]
+python-source = "python"
+module-name = "rustrees.rustrees"
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
