@@ -95,10 +95,13 @@ impl Dataset {
     }
 
     pub fn clone_without_data(&self) -> Dataset {
-        let mut clone = self.clone();
-        clone.feature_matrix = vec![];
-        clone.target_vector = vec![];
-        clone
+        Dataset {
+            feature_names: self.feature_names.clone(),
+            feature_uniform: vec![false; self.feature_names.len()],
+            feature_matrix: vec![],
+            target_name: self.target_name.clone(),
+            target_vector: vec![]
+        }
     }
 
     pub fn n_samples(&self) -> usize {

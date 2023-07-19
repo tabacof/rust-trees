@@ -32,5 +32,6 @@ jupyter notebook
 
 And then import the library in the notebook:
 ```python
-import rustrees
+from rustrees.rustrees import DecisionTree, RandomForest
+import rustrees.tree as rt
 ```
