@@ -81,7 +81,7 @@ impl RandomForest {
                 
                 let bootstrap = train.bootstrap(&mut rng);
                 TreeNode::_train(
-                    bootstrap,
+                    &bootstrap,
                     0,
                     params,
                     mean_squared_error_split_feature,
@@ -120,7 +120,7 @@ impl RandomForest {
 
                 let bootstrap = train.bootstrap(&mut rng);
                 TreeNode::_train(
-                    bootstrap,
+                    &bootstrap,
                     0,
                     params,
                     mean_squared_error_split_feature,
@@ -173,7 +173,7 @@ impl DecisionTree {
             n_estimators: None,
         };
         DecisionTree {
-            root: TreeNode::_train(train, 0, params, mean_squared_error_split_feature, &mut rng),
+            root: TreeNode::_train(&train, 0, params, mean_squared_error_split_feature, &mut rng),
             params,
         }
     }
@@ -198,7 +198,7 @@ impl DecisionTree {
             n_estimators: None,
         };
         DecisionTree {
-            root: TreeNode::_train(train, 0, params, gini_coefficient_split_feature, &mut rng),
+            root: TreeNode::_train(&train, 0, params, gini_coefficient_split_feature, &mut rng),
             params,
         }
     }
@@ -222,7 +222,7 @@ impl TreeNode {
     }
 
     fn _train(
-        train: Dataset,
+        train: &Dataset,
         curr_depth: i32,
         train_options: TrainOptions,
         split_feature: SplitFunction,
@@ -310,14 +310,14 @@ impl TreeNode {
             samples: train.n_samples(),
             feature_name: Some(train.feature_names[best_feature.col_index].clone()),
             left: Some(Box::new(TreeNode::_train(
-                left_dataset,
+                &left_dataset,
                 curr_depth + 1,
                 train_options,
                 split_feature,
                 rng,
             ))),
             right: Some(Box::new(TreeNode::_train(
-                right_dataset,
+                &right_dataset,
                 curr_depth + 1,
                 train_options,
                 split_feature,
