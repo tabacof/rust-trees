@@ -74,11 +74,11 @@ impl RandomForest {
             .map(|i| {
                 let mut rng;
                 if let Some(seed) = random_state {
-                    rng = StdRng::seed_from_u64(seed+i as u64);
+                    rng = StdRng::seed_from_u64(seed + i as u64);
                 } else {
                     rng = StdRng::from_entropy();
                 }
-                
+
                 let bootstrap = train.bootstrap(&mut rng);
                 TreeNode::_train(
                     &bootstrap,
@@ -113,7 +113,7 @@ impl RandomForest {
             .map(|i| {
                 let mut rng;
                 if let Some(seed) = random_state {
-                    rng = StdRng::seed_from_u64(seed+i as u64);
+                    rng = StdRng::seed_from_u64(seed + i as u64);
                 } else {
                     rng = StdRng::from_entropy();
                 }
@@ -232,14 +232,7 @@ impl TreeNode {
             || (train_options.min_samples_leaf > train.n_samples() as i32 / 2)
             || (train.feature_uniform.iter().all(|&x| x))
         {
-            return TreeNode {
-                split: None,
-                prediction: utils::float_avg(&train.target_vector),
-                samples: train.n_samples(),
-                feature_name: None,
-                left: None,
-                right: None,
-            };
+            return TreeNode::new_leaf(utils::float_avg(&train.target_vector), train.n_samples());
         }
 
         let features = train
@@ -323,6 +316,17 @@ impl TreeNode {
                 split_feature,
                 rng,
             ))),
+        }
+    }
+
+    fn new_leaf(prediction: f32, samples: usize) -> TreeNode {
+        TreeNode {
+            split: None,
+            prediction,
+            samples,
+            feature_name: None,
+            left: None,
+            right: None,
         }
     }
 
