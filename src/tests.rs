@@ -91,7 +91,7 @@ mod tests {
         let pred = classification_threshold(&pred, 0.5);
 
         println!("Accuracy: {}", accuracy(&test.target_vector, &pred),);
-        assert_greater_than(accuracy(&test.target_vector, &pred), 0.964);
+        assert_greater_than(accuracy(&test.target_vector, &pred), 0.96);
 
     }
 

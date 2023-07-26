@@ -22,6 +22,19 @@ pub(crate) struct SplitResult {
     pub(crate) loss: f32,
 }
 
+impl SplitResult {
+    pub(crate) fn new_max_loss() -> SplitResult {
+        SplitResult {
+            col_index: 0,
+            feature_name: "".to_string(),
+            row_index: 0,
+            split: 0.0,
+            prediction: 0.0,
+            loss: f32::MAX,
+        }
+    }
+}
+
 //pub(crate) struct MeanSquaredError;
 
 //impl SplitCriteria for MeanSquaredError {
