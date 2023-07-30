@@ -40,6 +40,13 @@ pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
         / x_true.len() as f32
 }
 
+pub fn get_rng(maybe_seed: Option<u64>) -> rand::rngs::StdRng {
+    match maybe_seed {
+        Some(seed) => rand::SeedableRng::seed_from_u64(seed),
+        None => rand::SeedableRng::from_entropy(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
