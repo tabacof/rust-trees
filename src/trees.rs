@@ -56,7 +56,7 @@ impl TrainOptions {
 impl RandomForest {
     #[staticmethod]
     pub fn train_reg(
-        train: Dataset,
+        train: &Dataset,
         n_estimators: i32,
         max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
@@ -95,7 +95,7 @@ impl RandomForest {
 
     #[staticmethod]
     pub fn train_clf(
-        train: Dataset,
+        train: &Dataset,
         n_estimators: i32,
         max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
@@ -155,7 +155,7 @@ impl RandomForest {
 impl DecisionTree {
     #[staticmethod]
     pub fn train_reg(
-        train: Dataset,
+        train: &Dataset,
         max_depth: i32,
         min_samples_leaf: Option<i32>,
         random_state: Option<u64>,
@@ -181,7 +181,7 @@ impl DecisionTree {
 
     #[staticmethod]
     pub fn train_clf(
-        train: Dataset,
+        train: &Dataset,
         max_depth: i32,
         min_samples_leaf: Option<i32>,
         random_state: Option<u64>,
