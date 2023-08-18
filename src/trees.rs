@@ -234,8 +234,8 @@ impl TreeNode {
 
     pub fn predict(&self, test: &Dataset) -> Vec<f32> {
         let mut res = vec![];
+        let mut feature_vector = HashMap::new();
         for i in 0..test.n_samples() {
-            let mut feature_vector = HashMap::new();
             for (j, feature) in test.feature_names.iter().enumerate() {
                 feature_vector.insert(feature, test.feature_matrix[j][i]);
             }
