@@ -29,18 +29,21 @@ fn read_train_test_dataset(name: &str) -> (Dataset, Dataset) {
     (train, test)
 }
 fn criterion_benchmark(c: &mut Criterion) {
-    let (train, test) = read_train_test_dataset("housing");
+    let dataset = "dgp";
+    let (train, test) = read_train_test_dataset(dataset);
     println!("train: {}", train.n_samples());
     println!("test: {}", test.n_samples());
 
     // benchmark training
-    c.bench_function("train_decision_tree_housing", |b| {
+    let train_name = "train_decision_tree_".to_string() + dataset;
+    c.bench_function(&train_name, |b| {
         b.iter(|| decision_tree_housing(&train, &test))
     });
 
     // benchmark prediction
+    let pred_name = "predict_decision_tree_".to_string() + dataset;
     let dt = DecisionTree::train_reg(&train, 5, Some(1), Some(42));
-    c.bench_function("predict_decision_tree_housing", |b| {
+    c.bench_function(&pred_name, |b| {
         b.iter(|| predict_decision_tree_housing(&dt, &test))
     });
 }

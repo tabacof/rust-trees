@@ -135,7 +135,8 @@ impl RandomForest {
     pub fn predict(&self, x: &Dataset) -> Vec<f32> {
         let mut predictions = Vec::new();
         for root in &self.roots {
-            predictions.push(root.predict(x));
+            let new_tree = NewTree::from_old_tree(&root, x.feature_names.clone());
+            predictions.push(new_tree.predict(x));
         }
 
         let mut final_predictions = vec![0.0; x.n_samples()];
@@ -200,7 +201,8 @@ impl DecisionTree {
     }
 
     pub fn predict(&self, test: &Dataset) -> Vec<f32> {
-        self.root.predict(test)
+        let index_tree = NewTree::from_old_tree(&self.root, test.feature_names.clone());
+        index_tree.predict(test)
     }
 }
 
@@ -230,18 +232,6 @@ impl TreeNode {
             left: Some(Box::new(left)),
             right: Some(Box::new(right)),
         }
-    }
-
-    pub fn predict(&self, test: &Dataset) -> Vec<f32> {
-        let mut res = vec![];
-        for i in 0..test.n_samples() {
-            let mut feature_vector = HashMap::new();
-            for (j, feature) in test.feature_names.iter().enumerate() {
-                feature_vector.insert(feature, test.feature_matrix[j][i]);
-            }
-            res.push(self.predict_row(&feature_vector));
-        }
-        res
     }
 
     fn _train(
@@ -303,6 +293,33 @@ impl TreeNode {
             self.prediction
         }
     }
+
+    fn print(&self, depth: usize) {
+        match &self.feature_name {
+            None => {
+                println!(
+                    "{:indent$}|-> Leaf: pred: {}, N: {}",
+                    "",
+                    self.prediction,
+                    self.samples,
+                    indent = depth * 4
+                )
+            }
+            Some(f) => {
+                println!(
+                    "{:indent$}-> Branch: feat: {}, th: {}, N: {}, pred: {}",
+                    "",
+                    f,
+                    self.split.unwrap(),
+                    self.samples,
+                    self.prediction,
+                    indent = depth * 4
+                );
+                self.left.as_ref().unwrap().print(depth + 1);
+                self.right.as_ref().unwrap().print(depth + 1);
+            }
+        }
+    }
 }
 
 fn split_dataset(split: &SplitResult, dataset: &Dataset) -> (Dataset, Dataset) {
@@ -353,13 +370,176 @@ fn should_stop(options: TrainOptions, depth: i32, ds: &Dataset) -> bool {
     max_depth_reached || min_samples_reached || uniform_features || one_sample
 }
 
+// -------------------------------------
+// New tree test
+
+type NodeId = usize;
+type FeatureIndex = usize;
+
+struct NewTree {
+    root: NodeId,
+    nodes: Vec<NewNode>,
+    feature_names: Vec<String>,
+}
+
+enum NewNode {
+    Leaf(Leaf),
+    Branch(Branch),
+}
+
+struct Leaf {
+    prediction: f32,
+    samples: usize,
+}
+
+struct Branch {
+    feature: FeatureIndex,
+    threshold: f32,
+    left: NodeId,
+    right: NodeId,
+    samples: usize,
+    prediction: f32,
+}
+
+impl Leaf {
+    fn new(prediction: f32, samples: usize) -> Self {
+        Leaf {
+            prediction,
+            samples,
+        }
+    }
+}
+
+impl NewTree {
+    fn new(feature_names: Vec<String>) -> Self {
+        NewTree {
+            root: 0,
+            nodes: Vec::new(),
+            feature_names,
+        }
+    }
+
+    fn from_old_tree(root: &TreeNode, feature_names: Vec<String>) -> Self {
+        let mut tree = NewTree::new(feature_names);
+        tree.root = tree.new_node_from_old(root);
+        tree
+    }
+
+    fn new_node_from_old(&mut self, old: &TreeNode) -> NodeId {
+        let node = match old {
+            TreeNode {
+                split: None,
+                prediction,
+                samples,
+                ..
+            } => NewNode::Leaf(Leaf::new(*prediction, *samples)),
+            TreeNode {
+                split: Some(threshold),
+                prediction,
+                samples,
+                feature_name: Some(feature_name),
+                left: Some(left),
+                right: Some(right),
+            } => {
+                let feature = match self.feature_names.iter().position(|x| x == feature_name) {
+                    Some(i) => i,
+                    None => {
+                        self.feature_names.push(feature_name.clone());
+                        self.feature_names.len() - 1
+                    }
+                };
+                let left = self.new_node_from_old(&*left);
+                let right = self.new_node_from_old(&*right);
+                NewNode::Branch(Branch {
+                    feature,
+                    threshold: *threshold,
+                    left,
+                    right,
+                    samples: *samples,
+                    prediction: *prediction,
+                })
+            }
+            _ => panic!("Invalid Node, either leaf or branch with children expected"),
+        };
+
+        self.add_node(node)
+    }
+
+    fn print(&self) {
+        self.print_node(self.root, 0);
+    }
+
+    fn print_node(&self, node: NodeId, depth: usize) {
+        match &self.nodes[node] {
+            NewNode::Leaf(l) => {
+                println!(
+                    "{:indent$}|-> Leaf: pred: {}, N: {}",
+                    "",
+                    l.prediction,
+                    l.samples,
+                    indent = depth * 4
+                );
+            }
+            NewNode::Branch(b) => {
+                println!(
+                    "{:indent$}-> Branch: feat: {}, th: {}, N: {}, pred: {}",
+                    "",
+                    self.feature_names[b.feature],
+                    b.threshold,
+                    b.samples,
+                    b.prediction,
+                    indent = depth * 4
+                );
+                self.print_node(b.left, depth + 1);
+                self.print_node(b.right, depth + 1);
+            }
+        }
+    }
+
+    fn add_root(&mut self, node: NewNode) {
+        self.nodes.push(node);
+        self.root = self.nodes.len() - 1;
+    }
+
+    fn add_node(&mut self, node: NewNode) -> NodeId {
+        self.nodes.push(node);
+        self.nodes.len() - 1
+    }
+
+    fn predict(&self, test: &Dataset) -> Vec<f32> {
+        let mut predictions = Vec::with_capacity(test.n_samples());
+        let mut nodes: Vec<NodeId> = Vec::new();
+        for i in 0..test.n_samples() {
+            nodes.push(self.root);
+            while let Some(node) = nodes.pop() {
+                match &self.nodes[node] {
+                    NewNode::Leaf(l) => {
+                        predictions.push(l.prediction);
+                    }
+                    NewNode::Branch(b) => {
+                        if test.feature_matrix[b.feature][i] < b.threshold {
+                            nodes.push(b.left);
+                        } else {
+                            nodes.push(b.right);
+                        }
+                    }
+                }
+            }
+            nodes.clear();
+        }
+        predictions
+    }
+}
+
+// -------------------------------------
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn test_predict() {
-        let mut dataset = Dataset::read_csv("datasets/toy_test.csv", ";");
+        let dataset = Dataset::read_csv("datasets/toy_test.csv", ";");
 
         let root = TreeNode {
             split: Some(2.),
@@ -380,7 +560,50 @@ mod test {
         };
 
         let expected = Dataset::read_csv("datasets/toy_test_predict.csv", ";");
-        dt.predict(&mut dataset);
-        assert_eq!(expected, dataset);
+        let pred = dt.predict(&dataset);
+        assert_eq!(expected.target_vector, pred);
+    }
+
+    #[test]
+    fn test_new_predict() {
+        let dataset = Dataset::read_csv("datasets/toy_test.csv", ";");
+
+        let root = TreeNode {
+            split: Some(2.),
+            prediction: 0.5,
+            samples: 2,
+            feature_name: Some("feature_a".to_string()),
+            left: Some(Box::new(TreeNode::new_leaf(1., 1))),
+            right: Some(Box::new(TreeNode::new_leaf(0., 1))),
+        };
+
+        let dt = DecisionTree {
+            root,
+            params: TrainOptions {
+                max_depth: 1,
+                min_samples_leaf: 1,
+                n_estimators: None,
+            },
+        };
+
+        let expected = Dataset::read_csv("datasets/toy_test_predict.csv", ";");
+        let pred = dt.predict(&dataset);
+        assert_eq!(expected.target_vector, pred);
+
+        let new_tree = NewTree::from_old_tree(&dt.root, dataset.feature_names.clone());
+        let new_predictions = new_tree.predict(&dataset);
+        assert_eq!(pred, new_predictions);
+    }
+
+    #[test]
+    fn print_trees() {
+        let dataset = Dataset::read_csv("datasets/titanic_train.csv", ",");
+        let dt = DecisionTree::train_reg(&dataset, 2, None, None);
+        println!("Old Tree");
+        dt.root.print(0);
+
+        let new_tree = NewTree::from_old_tree(&dt.root, dataset.feature_names.clone());
+        println!("\nNew Tree");
+        new_tree.print();
     }
 }
