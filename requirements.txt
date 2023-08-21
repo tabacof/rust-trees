@@ -7,3 +7,5 @@ matplotlib
 pyarrow
 econml
 seaborn
+black
+ruff

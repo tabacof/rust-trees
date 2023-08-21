@@ -157,6 +157,10 @@ impl Dataset {
     pub fn from_pyarrow(df: &PyAny) -> Dataset {
         Self::_from_pyarrow(df)
     }
+
+    pub fn add_target(&mut self, target: Vec<f32>) {
+        self.target_vector = target;
+    }
 }
 
 #[cfg(test)]
