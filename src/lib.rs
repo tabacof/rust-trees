@@ -7,6 +7,8 @@ mod utils;
 pub use dataset::Dataset;
 pub use trees::DecisionTree;
 pub use trees::RandomForest;
+pub use trees::TrainOptions;
+pub use trees::Tree;
 pub use utils::*;
 
 use pyo3::prelude::*;
