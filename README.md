@@ -98,5 +98,3 @@ And then import the library in the notebook:
 ```python
 import rustrees.decision_tree as rt_dt
 ```
-
-```
