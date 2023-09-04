@@ -130,8 +130,6 @@ impl RandomForest {
     }
 }
 
-
-
 #[pymethods]
 impl DecisionTree {
     #[staticmethod]
@@ -505,6 +503,22 @@ impl PartialEq for Tree {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_split_dataset() {
+        let dataset = Dataset::read_csv("datasets/toy_test.csv", ";");
+        let split = SplitResult {
+            col_index: 0,
+            loss: 0.5,
+            feature_name: "".to_string(),
+            row_index: 0,
+            split: 2.,
+            prediction: 1.,
+        };
+        let (left, right) = split_dataset(&split, &dataset);
+        assert_eq!(left.target_vector, vec![1., 1.]);
+        assert_eq!(right.target_vector, vec![0., 0.]);
+    }
 
     #[test]
     fn test_predict() {

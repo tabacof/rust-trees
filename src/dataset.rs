@@ -1,13 +1,13 @@
+use arrow::array::Float32Array;
+use arrow::compute::cast;
+use arrow::csv;
+use arrow::datatypes::DataType;
+use arrow::pyarrow::PyArrowConvert;
+use arrow::record_batch::RecordBatch;
 use pyo3::prelude::*;
 use rand::{rngs::StdRng, Rng};
 use std::fs;
-use arrow::array::{Float32Array};
-use arrow::record_batch::RecordBatch;
-use arrow::compute::cast;
-use arrow::csv;
 use std::fs::File;
-use arrow::datatypes::DataType;
-use arrow::pyarrow::PyArrowConvert;
 
 use pyo3::types::PyAny;
 
@@ -22,10 +22,9 @@ pub struct Dataset {
 }
 
 impl Dataset {
-
     fn _from_pyarrow(df: &PyAny) -> Dataset {
         let batch = RecordBatch::from_pyarrow(df).unwrap();
-        
+
         let feature_names = batch
             .schema()
             .fields()
@@ -41,22 +40,66 @@ impl Dataset {
             feature_matrix: feature_matrix[0..feature_matrix.len() - 1].to_vec(),
             target_name: feature_names.last().unwrap().to_string(),
             target_vector: feature_matrix.last().unwrap().to_vec(),
-        }       
+        }
     }
 
-    fn _read_batch(batch: RecordBatch) -> Vec<Vec<f32>>{
+    // usefull for tests
+    pub(crate) fn from_vecs<S: Into<String>>(
+        col_names: Vec<S>,
+        row_vecs: Vec<Vec<f32>>,
+    ) -> Dataset {
+        assert!(row_vecs.len() > 0);
+        assert!(col_names.len() > 0);
+        assert!(col_names.len() == row_vecs[0].len());
+
+        let feature_names: Vec<String> = col_names[0..col_names.len() - 1]
+            .iter()
+            .map(|x| x.into().clone())
+            .collect();
+        let target_name = col_names[col_names.len() - 1].into();
+        let row_len = row_vecs[0].len();
+
+        // create feature matrix
+        // create target vector
+        // create one vector per feature with capacity equal to samples
+        // for each row
+        //  push value to target vector
+        //  for each feature
+        //  push value to feature vector
+        let mut feature_matrix = Vec::with_capacity(feature_names.len());
+        let mut target_vector = Vec::with_capacity(row_vecs.len());
+        for _ in 0..feature_names.len() {
+            feature_matrix.push(Vec::with_capacity(row_vecs.len()));
+        }
+        for i in 0..row_vecs.len() {
+            target_vector.push(row_vecs[i][row_len - 1]);
+            for j in 0..feature_names.len() {
+                feature_matrix[j].push(row_vecs[i][j]);
+            }
+        }
+
+        Dataset {
+            feature_names,
+            feature_uniform: vec![false; col_names.len() - 1],
+            feature_matrix,
+            target_name,
+            target_vector,
+        }
+    }
+
+    fn _read_batch(batch: RecordBatch) -> Vec<Vec<f32>> {
         batch
-        .columns()
-        .iter()
-        .map(|c| cast(c, &DataType::Float32).unwrap())
-        .map(|c| {
-            c.as_any()
-                .downcast_ref::<Float32Array>()
-                .unwrap()
-                .values()
-                .to_vec()
-        })
-        .collect::<Vec<_>>()
+            .columns()
+            .iter()
+            .map(|c| cast(c, &DataType::Float32).unwrap())
+            .map(|c| {
+                c.as_any()
+                    .downcast_ref::<Float32Array>()
+                    .unwrap()
+                    .values()
+                    .to_vec()
+            })
+            .collect::<Vec<_>>()
     }
 
     fn _read_csv(path: &str, sep: &str) -> Dataset {
@@ -100,7 +143,7 @@ impl Dataset {
             feature_uniform: vec![false; self.feature_names.len()],
             feature_matrix: vec![],
             target_name: self.target_name.clone(),
-            target_vector: vec![]
+            target_vector: vec![],
         }
     }
 
@@ -179,7 +222,6 @@ mod tests {
             target_vector: vec![1.0, 0.0],
         };
 
-
         assert_eq!(expected, got);
     }
 
@@ -204,5 +246,13 @@ mod tests {
         let got = dataset.clone_without_data();
 
         assert_eq!(expected, got);
+    }
+
+    #[test]
+    fn test_dataset_print() {
+        let ds = Dataset::from_vecs(
+            vec!["feature_a", "feature_b", "target"],
+            vec![vec![1., 3., 0.], vec![2., 4., 0.]],
+        );
     }
 }
