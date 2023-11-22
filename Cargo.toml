@@ -20,6 +20,7 @@ arrow = { version = "37.0.0", features = ["prettyprint", "pyarrow"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
+randomforest = "0.1.6"
 
 [[bench]]
 name = "benchmarks"
