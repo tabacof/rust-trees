@@ -13,7 +13,13 @@ class DecisionTree(BaseEstimator):
     Options for regression and classification are available.
     """
 
-    def __init__(self, min_samples_leaf=1, max_depth: int = 10, random_state=None):
+    def __init__(
+        self,
+        min_samples_leaf=1,
+        max_depth: int = 10,
+        max_features: int = None,
+        random_state=None,
+    ):
         """
         Parameters
         ----------
@@ -21,11 +27,14 @@ class DecisionTree(BaseEstimator):
             The minimum number of samples required to be at a leaf node. The default is 1.
         max_depth : int, optional
             The maximum depth of the tree. The default is 10.
+        max_features: int, optional
+            The maximum number of features per split. Default is None, which means all features are considered.
         random_state : int, optional
             The seed used by the random number generator. The default is None.
         """
         self.min_samples_leaf = min_samples_leaf
         self.max_depth = max_depth
+        self.max_features = max_features
         self.random_state = random_state
 
     def fit(self, X, y):
@@ -84,6 +93,7 @@ class DecisionTreeRegressor(DecisionTree, ClassifierMixin):
             dataset,
             min_samples_leaf=self.min_samples_leaf,
             max_depth=self.max_depth,
+            max_features=self.max_features,
             random_state=self.random_state,
         )
         return self
@@ -103,6 +113,7 @@ class DecisionTreeClassifier(DecisionTree, RegressorMixin):
             dataset,
             min_samples_leaf=self.min_samples_leaf,
             max_depth=self.max_depth,
+            max_features=self.max_features,
             random_state=self.random_state,
         )
         return self

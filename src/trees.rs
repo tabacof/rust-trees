@@ -28,13 +28,15 @@ pub struct RandomForest {
 pub struct TrainOptions {
     min_samples_leaf: i32,
     max_depth: i32,
+    max_features: i32,
 }
 
 impl TrainOptions {
-    pub fn default_options() -> TrainOptions {
+    pub fn default_options(num_features: i32) -> TrainOptions {
         TrainOptions {
             max_depth: 10,
             min_samples_leaf: 1,
+            max_features: num_features,
         }
     }
 }
@@ -47,12 +49,15 @@ impl RandomForest {
         n_estimators: i32,
         max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
+        max_features: Option<i32>,
         random_state: Option<u64>,
     ) -> RandomForest {
+        let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
-            max_depth: max_depth.unwrap_or(TrainOptions::default_options().max_depth),
+            max_depth: max_depth.unwrap_or(default_train_options.max_depth),
             min_samples_leaf: min_samples_leaf
-                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+                .unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features)
         };
 
         let trees: Vec<Tree> = (0..n_estimators)
@@ -79,14 +84,16 @@ impl RandomForest {
         n_estimators: i32,
         max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
+        max_features: Option<i32>,
         random_state: Option<u64>,
     ) -> RandomForest {
+        let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
-            max_depth: max_depth.unwrap_or(TrainOptions::default_options().max_depth),
+            max_depth: max_depth.unwrap_or(default_train_options.max_depth),
             min_samples_leaf: min_samples_leaf
-                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+                .unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features)
         };
-
         let trees: Vec<Tree> = (0..n_estimators)
             .into_par_iter()
             .map(|i| {
@@ -137,16 +144,20 @@ impl DecisionTree {
     #[staticmethod]
     pub fn train_reg(
         train: &Dataset,
-        max_depth: i32,
+        max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
+        max_features: Option<i32>,
         random_state: Option<u64>,
     ) -> DecisionTree {
         let mut rng = utils::get_rng(random_state, 0);
+        let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
-            max_depth,
+            max_depth: max_depth.unwrap_or(default_train_options.max_depth),
             min_samples_leaf: min_samples_leaf
-                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+                .unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features)
         };
+
         DecisionTree {
             tree: Tree::fit(
                 &train,
@@ -161,15 +172,18 @@ impl DecisionTree {
     #[staticmethod]
     pub fn train_clf(
         train: &Dataset,
-        max_depth: i32,
+        max_depth: Option<i32>,
         min_samples_leaf: Option<i32>,
+        max_features: Option<i32>,
         random_state: Option<u64>,
     ) -> DecisionTree {
         let mut rng = utils::get_rng(random_state, 0);
+        let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
-            max_depth,
+            max_depth: max_depth.unwrap_or(default_train_options.max_depth),
             min_samples_leaf: min_samples_leaf
-                .unwrap_or(TrainOptions::default_options().min_samples_leaf),
+                .unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features)
         };
         DecisionTree {
             tree: Tree::fit(&train, 0, params, gini_coefficient_split_feature, &mut rng),
@@ -429,8 +443,10 @@ impl Tree {
         let mut best_feature = SplitResult::new_max_loss();
         let mut feature_indexes = (0..train.feature_names.len()).collect::<Vec<usize>>();
         feature_indexes.shuffle(rng);
+        let max_features = train_options.max_features;
+        let selected_feature_indexes = feature_indexes[0..max_features as usize].to_vec();
 
-        for i in feature_indexes {
+        for i in selected_feature_indexes {
             if train.feature_uniform[i] {
                 continue;
             }

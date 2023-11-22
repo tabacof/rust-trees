@@ -5,7 +5,7 @@ use rustrees::Dataset;
 use rustrees::DecisionTree;
 
 fn decision_tree_housing(train: &Dataset, test: &Dataset) {
-    let dt = DecisionTree::train_reg(train, 5, Some(1), Some(42));
+    let dt = DecisionTree::train_reg(train, Some(5), Some(1), None, Some(42));
     if train.n_samples() <= 1 {
         let pred = dt.predict(&test);
         println!("R2: {}", r2(&test.target_vector, &pred));
@@ -42,7 +42,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     // benchmark prediction
     let pred_name = "predict_decision_tree_".to_string() + dataset;
-    let dt = DecisionTree::train_reg(&train, 5, Some(1), Some(42));
+    let dt = DecisionTree::train_reg(&train, Some(5), Some(1), None, Some(42));
     c.bench_function(&pred_name, |b| {
         b.iter(|| predict_decision_tree_housing(&dt, &test))
     });
