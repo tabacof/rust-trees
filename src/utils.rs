@@ -23,8 +23,7 @@ pub(crate) fn classification_threshold(x: &[f32], clf_threshold: f32) -> Vec<f32
 }
 
 /// computes the mean squared error between two vectors used for testing regression case.
-#[cfg(test)]
-pub(crate) fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
+pub fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
     let mse: f32 = x_true
         .iter()
         .zip(x_pred)
@@ -38,8 +37,7 @@ pub(crate) fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
 }
 
 /// computes the accuracy of a binary classification. Used for testing.
-#[cfg(test)]
-pub(crate) fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
+pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
     x_true
         .iter()
         .zip(x_pred)

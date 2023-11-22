@@ -7,12 +7,13 @@
 //! ```rust
 //! use rustrees::{DecisionTree, Dataset, r2};
 //! 
-//! let dataset = Dataset::read_csv("iris.csv", ",");
+//! let dataset = Dataset::read_csv("datasets/titanic_train.csv", ",");
 //! 
 //! let dt = DecisionTree::train_reg(
 //!    &dataset, 
-//!    5,        // max_depth
+//!    Some(5),        // max_depth
 //!    Some(1),  // min_samples_leaf        
+//!    None,     // max_features (None = all features)
 //!    Some(42), // random_state
 //! );
 //! 
@@ -35,6 +36,7 @@ pub use trees::DecisionTree;
 pub use trees::RandomForest;
 pub use trees::TrainOptions;
 pub use trees::Tree;
+pub use utils::{accuracy, r2};
 
 use pyo3::prelude::*;
 

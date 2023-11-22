@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{trees::RandomForest, *};
+    use crate::{utils::classification_threshold, utils::r2, utils::accuracy};
 
     fn assert_greater_than(a: f32, b: f32) {
         if a <= b {
@@ -10,7 +11,6 @@ mod tests {
 
     #[test]
     fn test_integration() {
-        let a = Box::new(5);
         let train = Dataset::read_csv("datasets/diabetes_train.csv", ",");
         let test = Dataset::read_csv("datasets/diabetes_test.csv", ",");
         let dt = DecisionTree::train_reg(&train, Some(5), Some(1), None, Some(42));
