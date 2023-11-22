@@ -1,13 +1,13 @@
+use arrow::array::Float32Array;
+use arrow::compute::cast;
+use arrow::csv;
+use arrow::datatypes::DataType;
+use arrow::pyarrow::PyArrowConvert;
+use arrow::record_batch::RecordBatch;
 use pyo3::prelude::*;
 use rand::{rngs::StdRng, Rng};
 use std::fs;
-use arrow::array::{Float32Array};
-use arrow::record_batch::RecordBatch;
-use arrow::compute::cast;
-use arrow::csv;
 use std::fs::File;
-use arrow::datatypes::DataType;
-use arrow::pyarrow::PyArrowConvert;
 
 use pyo3::types::PyAny;
 
@@ -22,10 +22,9 @@ pub struct Dataset {
 }
 
 impl Dataset {
-
     fn _from_pyarrow(df: &PyAny) -> Dataset {
         let batch = RecordBatch::from_pyarrow(df).unwrap();
-        
+
         let feature_names = batch
             .schema()
             .fields()
@@ -41,22 +40,22 @@ impl Dataset {
             feature_matrix: feature_matrix[0..feature_matrix.len() - 1].to_vec(),
             target_name: feature_names.last().unwrap().to_string(),
             target_vector: feature_matrix.last().unwrap().to_vec(),
-        }       
+        }
     }
 
-    fn _read_batch(batch: RecordBatch) -> Vec<Vec<f32>>{
+    fn _read_batch(batch: RecordBatch) -> Vec<Vec<f32>> {
         batch
-        .columns()
-        .iter()
-        .map(|c| cast(c, &DataType::Float32).unwrap())
-        .map(|c| {
-            c.as_any()
-                .downcast_ref::<Float32Array>()
-                .unwrap()
-                .values()
-                .to_vec()
-        })
-        .collect::<Vec<_>>()
+            .columns()
+            .iter()
+            .map(|c| cast(c, &DataType::Float32).unwrap())
+            .map(|c| {
+                c.as_any()
+                    .downcast_ref::<Float32Array>()
+                    .unwrap()
+                    .values()
+                    .to_vec()
+            })
+            .collect::<Vec<_>>()
     }
 
     fn _read_csv(path: &str, sep: &str) -> Dataset {
@@ -100,7 +99,7 @@ impl Dataset {
             feature_uniform: vec![false; self.feature_names.len()],
             feature_matrix: vec![],
             target_name: self.target_name.clone(),
-            target_vector: vec![]
+            target_vector: vec![],
         }
     }
 
@@ -178,7 +177,6 @@ mod tests {
             target_name: "target".to_string(),
             target_vector: vec![1.0, 0.0],
         };
-
 
         assert_eq!(expected, got);
     }

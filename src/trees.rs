@@ -55,9 +55,8 @@ impl RandomForest {
         let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
             max_depth: max_depth.unwrap_or(default_train_options.max_depth),
-            min_samples_leaf: min_samples_leaf
-                .unwrap_or(default_train_options.min_samples_leaf),
-            max_features: max_features.unwrap_or(default_train_options.max_features)
+            min_samples_leaf: min_samples_leaf.unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features),
         };
 
         let trees: Vec<Tree> = (0..n_estimators)
@@ -90,9 +89,8 @@ impl RandomForest {
         let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
             max_depth: max_depth.unwrap_or(default_train_options.max_depth),
-            min_samples_leaf: min_samples_leaf
-                .unwrap_or(default_train_options.min_samples_leaf),
-            max_features: max_features.unwrap_or(default_train_options.max_features)
+            min_samples_leaf: min_samples_leaf.unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features),
         };
         let trees: Vec<Tree> = (0..n_estimators)
             .into_par_iter()
@@ -137,8 +135,6 @@ impl RandomForest {
     }
 }
 
-
-
 #[pymethods]
 impl DecisionTree {
     #[staticmethod]
@@ -153,9 +149,8 @@ impl DecisionTree {
         let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
             max_depth: max_depth.unwrap_or(default_train_options.max_depth),
-            min_samples_leaf: min_samples_leaf
-                .unwrap_or(default_train_options.min_samples_leaf),
-            max_features: max_features.unwrap_or(default_train_options.max_features)
+            min_samples_leaf: min_samples_leaf.unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features),
         };
 
         DecisionTree {
@@ -181,9 +176,8 @@ impl DecisionTree {
         let default_train_options = TrainOptions::default_options(train.feature_names.len() as i32);
         let params = TrainOptions {
             max_depth: max_depth.unwrap_or(default_train_options.max_depth),
-            min_samples_leaf: min_samples_leaf
-                .unwrap_or(default_train_options.min_samples_leaf),
-            max_features: max_features.unwrap_or(default_train_options.max_features)
+            min_samples_leaf: min_samples_leaf.unwrap_or(default_train_options.min_samples_leaf),
+            max_features: max_features.unwrap_or(default_train_options.max_features),
         };
         DecisionTree {
             tree: Tree::fit(&train, 0, params, gini_coefficient_split_feature, &mut rng),
