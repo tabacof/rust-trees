@@ -10,6 +10,7 @@ mod tests {
 
     #[test]
     fn test_integration() {
+        let a = Box::new(5);
         let train = Dataset::read_csv("datasets/diabetes_train.csv", ",");
         let test = Dataset::read_csv("datasets/diabetes_test.csv", ",");
         let dt = DecisionTree::train_reg(&train, Some(5), Some(1), None, Some(42));

@@ -1,6 +1,8 @@
 use std::cmp::Ordering::Equal;
 
-pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
+/// Sorts two vectors by the first one. This is used to sort target by feature and it is at the
+/// core of the decision tree algorithm. 
+pub(crate) fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
     let a_sorter = permutation::sort_by(a, |a, b| a.partial_cmp(b).unwrap_or(Equal));
 
     let a = a_sorter.apply_slice(a);
@@ -8,17 +10,21 @@ pub fn sort_two_vectors(a: &[f32], b: &[f32]) -> (Vec<f32>, Vec<f32>) {
     (a, b)
 }
 
-pub fn float_avg(x: &[f32]) -> f32 {
+pub(crate) fn float_avg(x: &[f32]) -> f32 {
     x.iter().sum::<f32>() / x.len() as f32
 }
 
-pub fn classification_threshold(x: &[f32], clf_threshold: f32) -> Vec<f32> {
+/// computes the classification threshold for a given vector. This is used for testing the
+#[cfg(test)]
+pub(crate) fn classification_threshold(x: &[f32], clf_threshold: f32) -> Vec<f32> {
     x.iter()
         .map(|&x| if x >= clf_threshold { 1.0 } else { 0.0 })
         .collect()
 }
 
-pub fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
+/// computes the mean squared error between two vectors used for testing regression case.
+#[cfg(test)]
+pub(crate) fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
     let mse: f32 = x_true
         .iter()
         .zip(x_pred)
@@ -31,7 +37,9 @@ pub fn r2(x_true: &[f32], x_pred: &[f32]) -> f32 {
     1.0 - mse / var
 }
 
-pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
+/// computes the accuracy of a binary classification. Used for testing.
+#[cfg(test)]
+pub(crate) fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
     x_true
         .iter()
         .zip(x_pred)
@@ -40,7 +48,7 @@ pub fn accuracy(x_true: &[f32], x_pred: &[f32]) -> f32 {
         / x_true.len() as f32
 }
 
-pub fn get_rng(maybe_seed: Option<u64>, offset: u64) -> rand::rngs::StdRng {
+pub(crate) fn get_rng(maybe_seed: Option<u64>, offset: u64) -> rand::rngs::StdRng {
     match maybe_seed {
         Some(seed) => rand::SeedableRng::seed_from_u64(seed + offset),
         None => rand::SeedableRng::from_entropy(),

@@ -1,5 +1,6 @@
 use crate::utils;
 
+/// A common interface for different split criteria.
 pub(crate) type SplitFunction = fn(
     col_index: usize,
     feature_name: &str,
@@ -7,10 +8,6 @@ pub(crate) type SplitFunction = fn(
     feature: &[f32],
     target: &[f32],
 ) -> SplitResult;
-
-//pub(crate) trait SplitCriteria {
-//    fn split_feature(col_index: usize, feature: &[f32], target: &[f32]) -> SplitResult;
-//}
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct SplitResult {
@@ -35,9 +32,9 @@ impl SplitResult {
     }
 }
 
-//pub(crate) struct MeanSquaredError;
 
-//impl SplitCriteria for MeanSquaredError {
+/// The split criteria used for regression problems. The mean squared error has a special form
+/// that allows to compute the loss of all splits reusing most of the computation across splits.
 pub(crate) fn mean_squared_error_split_feature(
     col_index: usize,
     feature_name: &str,
@@ -100,11 +97,9 @@ pub(crate) fn mean_squared_error_split_feature(
         loss: min_mse,
     }
 }
-//}
 
-//pub(crate) struct GiniCoefficient;
 
-//impl SplitCriteria for GiniCoefficient {
+/// The split criteria used for classification problems.
 pub(crate) fn gini_coefficient_split_feature(
     col_index: usize,
     feature_name: &str,
@@ -160,7 +155,6 @@ pub(crate) fn gini_coefficient_split_feature(
         loss: min_gini,
     }
 }
-//}
 
 #[cfg(test)]
 mod test {
