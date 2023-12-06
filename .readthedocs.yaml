@@ -13,7 +13,7 @@ build:
     rust: "1.70"
   commands:
     - python -m venv .env
-    - source .env/bin/activate
+    - . .env/bin/activate
     - pip install -r requirements.txt
     - maturin develop --release
 
