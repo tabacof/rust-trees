@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{trees::RandomForest, *};
+    use crate::{utils::classification_threshold, utils::r2, utils::accuracy};
 
     fn assert_greater_than(a: f32, b: f32) {
         if a <= b {
