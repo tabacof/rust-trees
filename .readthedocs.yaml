@@ -12,8 +12,8 @@ build:
     python: "3.11"
     rust: "1.70"
   commands:
-    - python -m venv .env
-    - . .env/bin/activate
+    - python -m venv .venv
+    - . .venv/bin/activate
     - pip install -r requirements.txt
     - maturin develop --release
 
