@@ -14,24 +14,30 @@ use std::fmt::Formatter;
 
 use pyo3::prelude::*;
 
+/// Represents the decision tree model. Each node represents a split on a feature.
 #[pyclass]
 pub struct DecisionTree {
     tree: Tree,
 }
 
+/// Represents the Random forest model. It is basically a collection of decision trees.
 #[pyclass]
 pub struct RandomForest {
     trees: Vec<Tree>,
 }
 
+/// Possible options for training the model.
 #[derive(Clone, Copy)]
 pub struct TrainOptions {
+    /// Minimum number of samples required to be at a leaf node. default: 1
     min_samples_leaf: i32,
+    /// Maximum depth of the tree. default: 10
     max_depth: i32,
     max_features: i32,
 }
 
 impl TrainOptions {
+    /// Returns the default options for training a model.
     pub fn default_options(num_features: i32) -> TrainOptions {
         TrainOptions {
             max_depth: 10,
@@ -41,8 +47,12 @@ impl TrainOptions {
     }
 }
 
+/// Methods for training and predicting with a random forest. These methods are exposed to python.
 #[pymethods]
 impl RandomForest {
+
+    /// Trains a random forest for regression.
+    /// A regression tree uses the mean squared error as the split criterion.
     #[staticmethod]
     pub fn train_reg(
         train: &Dataset,
@@ -77,6 +87,8 @@ impl RandomForest {
         RandomForest { trees }
     }
 
+    /// Trains a random forest for classification problem.
+    /// A classification tree uses the gini coefficient as the split criterion.
     #[staticmethod]
     pub fn train_clf(
         train: &Dataset,
@@ -116,6 +128,8 @@ impl RandomForest {
         RandomForest { trees }
     }
 
+    /// Predicts the target for a given dataset.
+    /// The prediction is the average of the predictions of each tree.
     pub fn predict(&self, x: &Dataset) -> Vec<f32> {
         let mut predictions = Vec::new();
         for tree in &self.trees {
@@ -135,8 +149,13 @@ impl RandomForest {
     }
 }
 
+/// Methods for training and predicting with a decision tree. These methods are exposed to python.
 #[pymethods]
 impl DecisionTree {
+
+
+    /// Trains a decision tree for regression.
+    /// A regression tree uses the mean squared error as the split criterion.
     #[staticmethod]
     pub fn train_reg(
         train: &Dataset,
@@ -164,6 +183,8 @@ impl DecisionTree {
         }
     }
 
+    /// Trains a decision tree for classification problem.
+    /// A classification tree uses the gini coefficient as the split criterion.
     #[staticmethod]
     pub fn train_clf(
         train: &Dataset,
@@ -184,6 +205,7 @@ impl DecisionTree {
         }
     }
 
+    /// Predicts the target for a given dataset.
     pub fn predict(&self, test: &Dataset) -> Vec<f32> {
         self.tree.predict(test)
     }
@@ -243,6 +265,10 @@ fn should_stop(options: TrainOptions, depth: i32, ds: &Dataset) -> bool {
 type NodeId = usize;
 type FeatureIndex = usize;
 
+/// An arena-based tree implementation. Each node is stored in a vector and the children are accessed by index.
+///
+/// Having all the nodes in a vector allows for a more cache-friendly implementation. And accessing
+/// them by index allows to avoid borrow checker issues related to having recursive data structures.
 pub struct Tree {
     root: NodeId,
     nodes: Vec<Node>,
@@ -362,7 +388,7 @@ impl Tree {
         self.nodes.len() - 1
     }
 
-    pub fn predict(&self, test: &Dataset) -> Vec<f32> {
+    fn predict(&self, test: &Dataset) -> Vec<f32> {
         let feature_matrix = self.reindex_features(&test);
 
         let mut predictions = Vec::with_capacity(test.n_samples());

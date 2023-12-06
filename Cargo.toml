@@ -1,11 +1,15 @@
 [package]
 name = "rustrees"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = [
     "Guilherme Lázari <guilhermelcs@gmail.com>",
     "Pedro Tabacof <tabacof@gmail.com>",
 ]
+description = "Decision trees in Rust"
+license = "MIT"
+categories = ["machine-learning", "decision-trees", "python"]
+keywords = ["machine-learning", "decision-trees", "python"]
 
 [lib]
 name = "rustrees"

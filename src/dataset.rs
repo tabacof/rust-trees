@@ -11,11 +11,22 @@ use std::fs::File;
 
 use pyo3::types::PyAny;
 
+/// Dataset represents the data used to train the model.
+///
+/// Data is stored grouped by features (columns) and the target is stored separately.
 #[pyclass]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Dataset {
+    /// Keeping the feature_names allows for mapping feature_indexes to feature names
     pub feature_names: Vec<String>,
+    /// feature_uniform is a vector of booleans that indicates whether a feature is uniform.
+    /// Uniform features are never useful for splitting so we can skip them. Also, once a feature
+    /// is uniform it will always be uniform for further splits.
     pub feature_uniform: Vec<bool>,
+
+    /// feature_matrix is a vector of features, where each feature is a vector of values.
+    /// The algorithm oftenn iterates over the features, so it is more efficient to keep
+    /// them in a vector of features, rather than a vector of rows.
     pub feature_matrix: Vec<Vec<f32>>,
     pub target_name: String,
     pub target_vector: Vec<f32>,
@@ -93,7 +104,7 @@ impl Dataset {
         }
     }
 
-    pub fn clone_without_data(&self) -> Dataset {
+    pub(crate) fn clone_without_data(&self) -> Dataset {
         Dataset {
             feature_names: self.feature_names.clone(),
             feature_uniform: vec![false; self.feature_names.len()],
@@ -103,11 +114,12 @@ impl Dataset {
         }
     }
 
+    /// exposes the size of the dataset
     pub fn n_samples(&self) -> usize {
         self.target_vector.len()
     }
 
-    pub fn bootstrap(&self, rng: &mut StdRng) -> Dataset {
+    pub(crate) fn bootstrap(&self, rng: &mut StdRng) -> Dataset {
         let mut feature_matrix: Vec<Vec<f32>> = vec![vec![]; self.feature_names.len()];
         let mut target_vector: Vec<f32> = Vec::new();
 
@@ -130,8 +142,11 @@ impl Dataset {
     }
 }
 
+/// Methods exposed to the python binding.
 #[pymethods]
 impl Dataset {
+
+    /// Reads a CSV file and returns a Dataset.
     #[staticmethod]
     pub fn read_csv(path: &str, sep: &str) -> Dataset {
         println!("Reading CSV file {}", path);
@@ -139,6 +154,7 @@ impl Dataset {
         Self::_read_csv(path, sep)
     }
 
+    /// Writes dataset to a CSV file.
     pub fn write_csv(&self, path: &str, sep: &str) {
         let mut contents: String = self.feature_names.join(sep) + sep + &self.target_name + "\n";
 
@@ -152,11 +168,16 @@ impl Dataset {
         fs::write(path, contents).expect("Unable to write file");
     }
 
+    /// Converts a pyarrow datafram to a Dataset.
+    /// This is used to convert a pandas dataframe to a Dataset.
     #[staticmethod]
     pub fn from_pyarrow(df: &PyAny) -> Dataset {
         Self::_from_pyarrow(df)
     }
 
+    /// Adds the target vector to the dataset.
+    /// A dataset always has the feature matrix, but will only have the target vector 
+    /// when it is for training.
     pub fn add_target(&mut self, target: Vec<f32>) {
         self.target_vector = target;
     }
