@@ -28,6 +28,7 @@ jobs:
   release:
     name: Release-Crate
     runs-on: ubuntu-latest
+    if: "startsWith(github.ref, 'refs/tags/')"
     needs: [build]
     steps:
     - uses: actions/checkout@v3
