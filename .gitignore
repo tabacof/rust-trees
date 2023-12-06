@@ -5,3 +5,4 @@
 .env/
 __pycache__/
 *.cpython-*
+docs/_build

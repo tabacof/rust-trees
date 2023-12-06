@@ -84,6 +84,11 @@ class DecisionTree(BaseEstimator):
 
 
 class DecisionTreeRegressor(DecisionTree, ClassifierMixin):
+    """
+    Decision tree regressor implemented using Rust.
+    Usage should be similar to scikit-learn's DecisionTreeRegressor.
+    """
+
     def __init__(self, **kwargs):
         super(DecisionTreeRegressor, self).__init__(**kwargs)
 
@@ -104,6 +109,11 @@ class DecisionTreeRegressor(DecisionTree, ClassifierMixin):
 
 
 class DecisionTreeClassifier(DecisionTree, RegressorMixin):
+    """
+    Decision tree classifier implemented using Rust.
+    Usage should be similar to scikit-learn's DecisionTreeClassifier.
+    """
+
     def __init__(self, **kwargs):
         super(DecisionTreeClassifier, self).__init__(**kwargs)
 
