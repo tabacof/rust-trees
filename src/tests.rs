@@ -67,7 +67,7 @@ mod tests {
     #[test]
     fn random_forest_diabetes() {
         let (train, test) = read_train_test_dataset("diabetes");
-        let rf = RandomForest::train_reg(&train, 10, Some(5), Some(1), None, Some(42));
+        let rf = RandomForest::train_reg(&train, 10, Some(5), Some(1), Some(5), Some(42));
         let pred = rf.predict(&test);
         println!("R2: {}", r2(&test.target_vector, &pred));
         assert_greater_than(r2(&test.target_vector, &pred), 0.38);
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn random_forest_housing() {
         let (train, test) = read_train_test_dataset("housing");
-        let rf = RandomForest::train_reg(&train, 10, Some(5), Some(1), None, Some(42));
+        let rf = RandomForest::train_reg(&train, 10, Some(5), Some(1), Some(3), Some(42));
         let pred = rf.predict(&test);
         println!("R2: {}", r2(&test.target_vector, &pred));
         assert_greater_than(r2(&test.target_vector, &pred), 0.641);

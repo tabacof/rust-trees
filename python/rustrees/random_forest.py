@@ -88,6 +88,11 @@ class RandomForest(BaseEstimator):
 
 
 class RandomForestRegressor(RandomForest, RegressorMixin):
+    """
+    A random forest regressor implemented using Rust.
+    Usage should be similar to scikit-learn's RandomForestRegressor.
+    """
+
     def __init__(self, **kwargs):
         super(RandomForestRegressor, self).__init__(**kwargs)
 
@@ -109,6 +114,11 @@ class RandomForestRegressor(RandomForest, RegressorMixin):
 
 
 class RandomForestClassifier(RandomForest, ClassifierMixin):
+    """
+    A random forest classifier implemented using Rust.
+    Usage should be similar to scikit-learn's RandomForestClassifier.
+    """
+
     def __init__(self, **kwargs):
         super(RandomForestClassifier, self).__init__(**kwargs)
 

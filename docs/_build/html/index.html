@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to rustrees’s documentation! &mdash; rustrees  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            rustrees
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to rustrees’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#module-rustrees.decision_tree">Decision trees</a><ul>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTree"><code class="docutils literal notranslate"><span class="pre">DecisionTree</span></code></a><ul>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTree.fit"><code class="docutils literal notranslate"><span class="pre">DecisionTree.fit()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTree.predict"><code class="docutils literal notranslate"><span class="pre">DecisionTree.predict()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTree.predict_proba"><code class="docutils literal notranslate"><span class="pre">DecisionTree.predict_proba()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeClassifier"><code class="docutils literal notranslate"><span class="pre">DecisionTreeClassifier</span></code></a><ul>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeClassifier.fit"><code class="docutils literal notranslate"><span class="pre">DecisionTreeClassifier.fit()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeClassifier.predict"><code class="docutils literal notranslate"><span class="pre">DecisionTreeClassifier.predict()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeClassifier.predict_proba"><code class="docutils literal notranslate"><span class="pre">DecisionTreeClassifier.predict_proba()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeRegressor"><code class="docutils literal notranslate"><span class="pre">DecisionTreeRegressor</span></code></a><ul>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeRegressor.fit"><code class="docutils literal notranslate"><span class="pre">DecisionTreeRegressor.fit()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeRegressor.predict"><code class="docutils literal notranslate"><span class="pre">DecisionTreeRegressor.predict()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rustrees.decision_tree.__init__"><code class="docutils literal notranslate"><span class="pre">decision_tree.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-rustrees.random_forest">Random forests</a><ul>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForest"><code class="docutils literal notranslate"><span class="pre">RandomForest</span></code></a><ul>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForest.fit"><code class="docutils literal notranslate"><span class="pre">RandomForest.fit()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForest.predict"><code class="docutils literal notranslate"><span class="pre">RandomForest.predict()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForest.predict_proba"><code class="docutils literal notranslate"><span class="pre">RandomForest.predict_proba()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestClassifier"><code class="docutils literal notranslate"><span class="pre">RandomForestClassifier</span></code></a><ul>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestClassifier.fit"><code class="docutils literal notranslate"><span class="pre">RandomForestClassifier.fit()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestClassifier.predict"><code class="docutils literal notranslate"><span class="pre">RandomForestClassifier.predict()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestClassifier.predict_proba"><code class="docutils literal notranslate"><span class="pre">RandomForestClassifier.predict_proba()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestRegressor"><code class="docutils literal notranslate"><span class="pre">RandomForestRegressor</span></code></a><ul>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestRegressor.fit"><code class="docutils literal notranslate"><span class="pre">RandomForestRegressor.fit()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.random_forest.RandomForestRegressor.predict"><code class="docutils literal notranslate"><span class="pre">RandomForestRegressor.predict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-rustrees.utils">Utils</a><ul>
+<li><a class="reference internal" href="#rustrees.utils.from_pandas"><code class="docutils literal notranslate"><span class="pre">from_pandas()</span></code></a></li>
+<li><a class="reference internal" href="#rustrees.utils.prepare_dataset"><code class="docutils literal notranslate"><span class="pre">prepare_dataset()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">rustrees</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to rustrees’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-rustrees-s-documentation">
+<h1>Welcome to rustrees’s documentation!<a class="headerlink" href="#welcome-to-rustrees-s-documentation" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+<section id="module-rustrees.decision_tree">
+<span id="decision-trees"></span><h1>Decision trees<a class="headerlink" href="#module-rustrees.decision_tree" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rustrees.decision_tree.</span></span><span class="sig-name descname"><span class="pre">DecisionTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_samples_leaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.decision_tree.DecisionTree" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></p>
+<p>A decision tree model implemented using Rust.
+Options for regression and classification are available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_samples_leaf</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum number of samples required to be at a leaf node. The default is 1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum depth of the tree. The default is 10.</p></li>
+<li><p><strong>max_features</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of features per split. Default is None, which means all features are considered.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed used by the random number generator. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTree.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.decision_tree.DecisionTree.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit the model according to the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em>) – The target.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTree.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTree.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict values (regression) or class (classification) for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values or classes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTree.predict_proba">
+<span class="sig-name descname"><span class="pre">predict_proba</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTree.predict_proba" title="Link to this definition"></a></dt>
+<dd><p>Predict class probabilities for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted class probabilities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rustrees.decision_tree.</span></span><span class="sig-name descname"><span class="pre">DecisionTreeClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeClassifier" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rustrees.decision_tree.DecisionTree" title="rustrees.decision_tree.DecisionTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DecisionTree</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RegressorMixin</span></code></p>
+<p>Decision tree classifier implemented using Rust.
+Usage should be similar to scikit-learn’s DecisionTreeClassifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_samples_leaf</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum number of samples required to be at a leaf node. The default is 1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum depth of the tree. The default is 10.</p></li>
+<li><p><strong>max_features</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of features per split. Default is None, which means all features are considered.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed used by the random number generator. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeClassifier" title="rustrees.decision_tree.DecisionTreeClassifier"><span class="pre">DecisionTreeClassifier</span></a></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeClassifier.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit the model according to the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em>) – The target.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeClassifier.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeClassifier.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict values (regression) or class (classification) for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values or classes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeClassifier.predict_proba">
+<span class="sig-name descname"><span class="pre">predict_proba</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeClassifier.predict_proba" title="Link to this definition"></a></dt>
+<dd><p>Predict class probabilities for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted class probabilities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeRegressor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rustrees.decision_tree.</span></span><span class="sig-name descname"><span class="pre">DecisionTreeRegressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeRegressor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rustrees.decision_tree.DecisionTree" title="rustrees.decision_tree.DecisionTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DecisionTree</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ClassifierMixin</span></code></p>
+<p>Decision tree regressor implemented using Rust.
+Usage should be similar to scikit-learn’s DecisionTreeRegressor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_samples_leaf</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum number of samples required to be at a leaf node. The default is 1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum depth of the tree. The default is 10.</p></li>
+<li><p><strong>max_features</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of features per split. Default is None, which means all features are considered.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed used by the random number generator. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeRegressor.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rustrees.decision_tree.DecisionTreeRegressor" title="rustrees.decision_tree.DecisionTreeRegressor"><span class="pre">DecisionTreeRegressor</span></a></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeRegressor.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit the model according to the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em>) – The target.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.DecisionTreeRegressor.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.decision_tree.DecisionTreeRegressor.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict values (regression) or class (classification) for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values or classes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.decision_tree.__init__">
+<span class="sig-prename descclassname"><span class="pre">decision_tree.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.decision_tree.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-rustrees.random_forest">
+<span id="random-forests"></span><h1>Random forests<a class="headerlink" href="#module-rustrees.random_forest" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rustrees.random_forest.</span></span><span class="sig-name descname"><span class="pre">RandomForest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_estimators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_samples_leaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.random_forest.RandomForest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></p>
+<p>A random forest model implemented using Rust.
+Options for regression and classification are available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_estimators</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of trees in the forest. The default is 100.</p></li>
+<li><p><strong>min_samples_leaf</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum number of samples required to be at a leaf node. The default is 1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum depth of the tree. The default is 10.</p></li>
+<li><p><strong>max_features</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of features per split. Default is None, which means all features are considered.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed used by the random number generator. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForest.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.random_forest.RandomForest.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit the model according to the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em>) – The target.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForest.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForest.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict values (regression) or class (classification) for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values or classes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForest.predict_proba">
+<span class="sig-name descname"><span class="pre">predict_proba</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForest.predict_proba" title="Link to this definition"></a></dt>
+<dd><p>Predict class probabilities for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted class probabilities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rustrees.random_forest.</span></span><span class="sig-name descname"><span class="pre">RandomForestClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.random_forest.RandomForestClassifier" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rustrees.random_forest.RandomForest" title="rustrees.random_forest.RandomForest"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomForest</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ClassifierMixin</span></code></p>
+<p>A random forest classifier implemented using Rust.
+Usage should be similar to scikit-learn’s RandomForestClassifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_estimators</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of trees in the forest. The default is 100.</p></li>
+<li><p><strong>min_samples_leaf</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum number of samples required to be at a leaf node. The default is 1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum depth of the tree. The default is 10.</p></li>
+<li><p><strong>max_features</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of features per split. Default is None, which means all features are considered.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed used by the random number generator. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rustrees.random_forest.RandomForestClassifier" title="rustrees.random_forest.RandomForestClassifier"><span class="pre">RandomForestClassifier</span></a></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForestClassifier.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit the model according to the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em>) – The target.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestClassifier.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForestClassifier.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict values (regression) or class (classification) for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values or classes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestClassifier.predict_proba">
+<span class="sig-name descname"><span class="pre">predict_proba</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForestClassifier.predict_proba" title="Link to this definition"></a></dt>
+<dd><p>Predict class probabilities for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted class probabilities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestRegressor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rustrees.random_forest.</span></span><span class="sig-name descname"><span class="pre">RandomForestRegressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rustrees.random_forest.RandomForestRegressor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rustrees.random_forest.RandomForest" title="rustrees.random_forest.RandomForest"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomForest</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RegressorMixin</span></code></p>
+<p>A random forest regressor implemented using Rust.
+Usage should be similar to scikit-learn’s RandomForestRegressor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_estimators</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of trees in the forest. The default is 100.</p></li>
+<li><p><strong>min_samples_leaf</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum number of samples required to be at a leaf node. The default is 1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum depth of the tree. The default is 10.</p></li>
+<li><p><strong>max_features</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of features per split. Default is None, which means all features are considered.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed used by the random number generator. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestRegressor.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rustrees.random_forest.RandomForestRegressor" title="rustrees.random_forest.RandomForestRegressor"><span class="pre">RandomForestRegressor</span></a></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForestRegressor.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit the model according to the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em>) – The target.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rustrees.random_forest.RandomForestRegressor.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#rustrees.random_forest.RandomForestRegressor.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict values (regression) or class (classification) for X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values or classes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-rustrees.utils">
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-rustrees.utils" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="rustrees.utils.from_pandas">
+<span class="sig-prename descclassname"><span class="pre">rustrees.utils.</span></span><span class="sig-name descname"><span class="pre">from_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="headerlink" href="#rustrees.utils.from_pandas" title="Link to this definition"></a></dt>
+<dd><p>Convert a Pandas DataFrame to a Rustrees Dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – The DataFrame to convert.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Rustrees Dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rt.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rustrees.utils.prepare_dataset">
+<span class="sig-prename descclassname"><span class="pre">rustrees.utils.</span></span><span class="sig-name descname"><span class="pre">prepare_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="headerlink" href="#rustrees.utils.prepare_dataset" title="Link to this definition"></a></dt>
+<dd><p>Prepare a Rustrees Dataset from a Pandas DataFrame or a 2D array-like object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>pd.DataFrame</em><em> or </em><em>2D array-like object</em>) – The features.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em>, </em><em>Numpy array</em><em>, or </em><em>Pandas Series</em><em>, </em><em>optional</em>) – The target. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Rustrees Dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rt.Dataset</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If X is not a Pandas DataFrame or a 2D array-like object.
+    If y is not a list, Numpy array, or Pandas Series.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Pedro Tabacof, Guilherme Lázari.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
